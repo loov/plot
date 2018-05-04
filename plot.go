@@ -54,19 +54,19 @@ func New() *Plot {
 			Max: math.NaN(),
 		},
 		Line: Style{
-			Color: color.NRGBA{0, 0, 0, 255},
-			Fill:  nil,
-			Size:  1.0,
+			Stroke: color.NRGBA{0, 0, 0, 255},
+			Fill:   nil,
+			Size:   1.0,
 		},
 		Font: Style{
-			Color: color.NRGBA{0, 0, 0, 255},
-			Fill:  nil,
-			Size:  1.0,
+			Stroke: nil,
+			Fill:   color.NRGBA{0, 0, 0, 255},
+			Size:   0,
 		},
 		Fill: Style{
-			Color: nil,
-			Fill:  color.NRGBA{128, 128, 128, 255},
-			Size:  1.0,
+			Stroke: nil,
+			Fill:   color.NRGBA{128, 128, 128, 255},
+			Size:   1.0,
 		},
 	}
 }

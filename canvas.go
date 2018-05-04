@@ -42,9 +42,9 @@ type Canvas interface {
 }
 
 type Style struct {
-	Color color.Color
-	Fill  color.Color
-	Size  Length
+	Stroke color.Color
+	Fill   color.Color
+	Size   Length
 
 	// line only
 	Dash       []Length

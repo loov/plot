@@ -11,8 +11,9 @@ import (
 )
 
 func main() {
-	black := &plot.Style{Color: color.NRGBA{0, 0, 0, 255}}
-	interlace := &plot.Style{Color: color.NRGBA{230, 210, 210, 255}}
+	black := &plot.Style{Stroke: color.NRGBA{0, 0, 0, 255}}
+	textColor := &plot.Style{Fill: color.NRGBA{0, 0, 0, 255}}
+	interlace := &plot.Style{Stroke: color.NRGBA{230, 210, 210, 255}}
 	fill := &plot.Style{Fill: color.NRGBA{0, 0, 0, 10}}
 
 	canvas := plot.NewSVG(800, 600)
@@ -33,7 +34,8 @@ func main() {
 		points = append(points, p)
 
 		if step%10 == 0 {
-			text.Text(fmt.Sprintf("%.1f", x), p, black)
+			textColor.Fill = color.NRGBA{byte(step), 0, 0, 255}
+			text.Text(fmt.Sprintf("%.1f", x), p, textColor)
 		}
 		if step%100 == 0 {
 			underlay.Poly(plot.Ps(x, 0, x, size.Y), interlace)

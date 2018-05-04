@@ -2,7 +2,9 @@ package plot
 
 import (
 	"bytes"
+	"encoding/xml"
 	"fmt"
+	"image/color"
 	"io"
 	"sort"
 )
@@ -102,7 +104,7 @@ func (svg *svgContext) Rect(r Rect, style *Style) {
 }
 
 func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
-	w := writer{}
+	w := &writer{}
 	w.Writer = dst
 
 	id := 0
@@ -111,10 +113,10 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 	w.Print(`<?xml version="1.0" standalone="no"?>`)
 	w.Print(`<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">`)
 	size := svg.bounds.Size()
-	w.Print(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:loov="http://www.loov.io" width="%vpx" height="%vpx">`, size.X, size.Y)
+	w.Print(`<svg xmlns='http://www.w3.org/2000/svg' xmlns:loov='http://www.loov.io' width='%vpx' height='%vpx'>`, size.X, size.Y)
 	defer w.Print(`</svg>`)
 
-	w.Print(`<g transform="translate(0.5, 0.5)">`)
+	w.Print(`<g transform='translate(0.5, 0.5)'>`)
 	defer w.Print(`</g>`)
 
 	var writeLayer func(svg *svgContext)
@@ -124,16 +126,16 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 		if svg.clip {
 			id++
 			size := svg.bounds.Size()
-			w.Print(`<clipPath id="clip%v"><rect x="0" y="0" width="%v" height="%v" /></clipPath>`, id, size.X, size.Y)
+			w.Print(`<clipPath id='clip%v'><rect x='0' y='0' width='%v' height='%v' /></clipPath>`, id, size.X, size.Y)
 		}
 
 		w.Printf(`<g`)
-		w.Printf(` loov:index="%v"`, svg.index)
+		w.Printf(` loov:index='%v'`, svg.index)
 		if svg.bounds.Min.X != 0 || svg.bounds.Min.Y != 0 {
-			w.Printf(` transform="translate(%.2f %.2f)"`, svg.bounds.Min.X, svg.bounds.Min.Y)
+			w.Printf(` transform='translate(%.2f %.2f)'`, svg.bounds.Min.X, svg.bounds.Min.Y)
 		}
 		if svg.clip {
-			w.Printf(` clip-path="url(#clip%v)"`, id)
+			w.Printf(` clip-path='url(#clip%v)'`, id)
 		}
 
 		w.Print(">")
@@ -163,14 +165,20 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 
 	writeElement = func(svg *svgContext, el *svgElement) {
 		if len(el.points) > 0 {
-			w.Print(`<polyline stroke="black" fill="transparent" points="`)
+			w.Printf(`<polyline `)
+			w.writePolyStyle(&el.style)
+			w.Printf(` points='`)
 			for _, p := range el.points {
-				w.Print(`%.2f,%.2f `, p.X, p.Y)
+				w.Printf(`%.2f,%.2f `, p.X, p.Y)
 			}
-			w.Print(`" />`)
+			w.Print(`' />`)
 		}
 		if el.text != "" {
-			w.Print(`<text x="%.2f" y="%.2f">%v</text>`, el.origin.X, el.origin.Y, el.text)
+			w.Printf(`<text x='%.2f' y='%.2f' `, el.origin.X, el.origin.Y)
+			w.writeTextStyle(&el.style)
+			w.Printf(`>`)
+			xml.EscapeText(w, []byte(el.text))
+			w.Print(`</text>`)
 		}
 		if el.context != nil {
 			writeLayer(el.context)
@@ -180,6 +188,79 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 	writeLayer(&svg.svgContext)
 
 	return w.total, w.err
+}
+
+func (w *writer) writeTextStyle(style *Style) {
+	// TODO: merge with writePolyStyle
+	if style.Font == "" && style.Size == 0 && style.Stroke == nil && style.Fill == nil {
+		return
+	}
+
+	w.Printf(` style='`)
+	defer w.Printf(`' `)
+
+	if style.Font != "" {
+		w.Printf(`font-family: "`)
+		// TODO, verify escaping
+		xml.EscapeText(w, []byte(style.Font))
+		w.Printf(`";`)
+	}
+	if style.Size != 0 {
+		w.Printf(`font-size: %vpx;`, style.Size)
+	}
+	if style.Stroke != nil {
+		w.Printf(`color: %v;`, convertColorToHex(style.Stroke))
+	}
+	if style.Fill != nil {
+		w.Printf(`fill: %v;`, convertColorToHex(style.Fill))
+	}
+}
+
+func (w *writer) writePolyStyle(style *Style) {
+	if style.Size == 0 && style.Stroke == nil && style.Fill == nil && len(style.Dash) == 0 {
+		return
+	}
+
+	w.Printf(` style='`)
+	defer w.Printf(`'`)
+
+	if style.Stroke != nil {
+		w.Printf(`stroke: %v;`, convertColorToHex(style.Stroke))
+	} else {
+		w.Printf(`stroke: transparent;`)
+	}
+
+	if style.Fill != nil {
+		w.Printf(`fill: %v;`, convertColorToHex(style.Fill))
+	} else {
+		w.Printf(`fill: transparent;`)
+	}
+
+	if style.Size != 0 {
+		w.Printf(`stroke-width: %vpx;`, style.Size)
+	}
+
+	// TODO: dash
+}
+
+func convertColorToHex(color color.Color) string {
+	r, g, b, a := color.RGBA()
+	if a > 0 {
+		r, g, b = r*0xff/a, g*0xff/a, b*0xff/a
+		if r > 0xFF {
+			r = 0xFF
+		}
+		if g > 0xFF {
+			g = 0xFF
+		}
+		if b > 0xFF {
+			b = 0xFF
+		}
+	} else {
+		r, g, b, a = 0, 0, 0, 0
+	}
+	hex := r<<24 | g<<16 | b<<8 | a
+	return fmt.Sprintf("#%08x", hex)
 }
 
 type writer struct {
