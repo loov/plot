@@ -11,21 +11,19 @@ import (
 )
 
 func main() {
+	black := &plot.Style{Color: color.NRGBA{0, 0, 0, 255}}
+	interlace := &plot.Style{Color: color.NRGBA{230, 210, 210, 255}}
+	fill := &plot.Style{Fill: color.NRGBA{0, 0, 0, 10}}
+
 	canvas := plot.NewSVG(800, 600)
 
-	area := canvas.Clip(canvas.Bounds().Shrink(plot.P(30, 30)))
+	clip := canvas.Bounds().Shrink(plot.P(30, 30))
+	canvas.Rect(clip, fill)
+	area := canvas.Clip(clip)
 
 	underlay := area.Layer(-1)
 	graphic := area.Layer(1)
 	text := area.Layer(2)
-
-	black := &plot.Style{
-		Color: color.NRGBA{0, 0, 0, 255},
-	}
-
-	fill := &plot.Style{
-		Fill: color.NRGBA{0, 0, 0, 10},
-	}
 
 	points := []plot.Point{}
 	size := area.Bounds().Size()
@@ -37,11 +35,13 @@ func main() {
 		if step%10 == 0 {
 			text.Text(fmt.Sprintf("%.1f", x), p, black)
 		}
+		if step%100 == 0 {
+			underlay.Poly(plot.Ps(x, 0, x, size.Y), interlace)
+		}
 		step++
 	}
 
 	graphic.Poly(points, black)
-	underlay.Rect(0, 0, size.X, size.Y, fill)
 
 	pretty.Print(canvas)
 

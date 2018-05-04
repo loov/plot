@@ -21,6 +21,15 @@ func (r Rect) Zero() Rect               { return Rect{Point{0, 0}, r.Max.Sub(r.M
 func (r Rect) Size() Point              { return r.Max.Sub(r.Min) }
 func (r Rect) Offset(by Point) Rect     { return Rect{r.Min.Add(by), r.Max.Add(by)} }
 func (r Rect) Shrink(radius Point) Rect { return Rect{r.Min.Add(radius), r.Max.Sub(radius)} }
+func (r Rect) Points() []Point {
+	return []Point{
+		r.Min,
+		Point{r.Min.X, r.Max.Y},
+		r.Max,
+		Point{r.Max.X, r.Min.Y},
+		r.Min,
+	}
+}
 
 type Canvas interface {
 	Bounds() Rect
@@ -29,7 +38,7 @@ type Canvas interface {
 	Context(r Rect) Canvas
 	Text(text string, at Point, style *Style)
 	Poly(points []Point, style *Style)
-	Rect(x0, y0, x1, x2 Length, style *Style)
+	Rect(r Rect, style *Style)
 }
 
 type Style struct {

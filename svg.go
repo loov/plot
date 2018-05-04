@@ -97,8 +97,8 @@ func (svg *svgContext) Poly(points []Point, style *Style) {
 	})
 }
 
-func (svg *svgContext) Rect(x0, y0, x1, y1 Length, style *Style) {
-	svg.Poly(RectShape(x0, y0, x1, y1), style)
+func (svg *svgContext) Rect(r Rect, style *Style) {
+	svg.Poly(r.Points(), style)
 }
 
 func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
@@ -111,8 +111,11 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 	w.Print(`<?xml version="1.0" standalone="no"?>`)
 	w.Print(`<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">`)
 	size := svg.bounds.Size()
-	w.Print(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:loov="http://www.loov.io"> width="%vpx" height="%vpx" style="box-sizing:border-box">`, size.X, size.Y)
+	w.Print(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:loov="http://www.loov.io" width="%vpx" height="%vpx">`, size.X, size.Y)
 	defer w.Print(`</svg>`)
+
+	w.Print(`<g transform="translate(0.5, 0.5)">`)
+	defer w.Print(`</g>`)
 
 	var writeLayer func(svg *svgContext)
 	var writeElement func(svg *svgContext, el *svgElement)
