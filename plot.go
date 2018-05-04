@@ -18,19 +18,6 @@ type Plot struct {
 	Fill Style
 }
 
-type Axis struct {
-	// Min value of the axis (in value space)
-	Min float64
-	// Max value of the axis (in value space)
-	Max float64
-	// Transform transform [0..1] -> float64
-	Transform func(p float64) float64
-}
-
-func (axis *Axis) IsAutomatic() bool {
-	return math.IsNaN(axis.Min) || math.IsNaN(axis.Max)
-}
-
 // Element is a drawable plot element
 type Element interface {
 	Draw(plot *Plot, canvas Canvas)
@@ -39,7 +26,14 @@ type Element interface {
 // Dataset represents an Element that contains data
 type Dataset interface {
 	Element
-	Stats(precentile float64) (min, max, avg, plow, p50, phigh Point)
+	Stats(precentiles ...float64) Stats
+}
+
+type Stats struct {
+	Min         Point
+	Average     Point
+	Max         Point
+	Percentiles []Point
 }
 
 func New() *Plot {
@@ -71,17 +65,12 @@ func New() *Plot {
 	}
 }
 
-func AutomaticAxis(elements []Element) (X, Y Axis) {
-	// TODO:
-	return Axis{}, Axis{}
-}
-
 func (plot *Plot) Draw(canvas Canvas) {
-	if plot.X.IsAutomatic() || plot.Y.IsAutomatic() {
+	if !plot.X.IsValid() || !plot.Y.IsValid() {
 		tmpplot := &Plot{}
 		*tmpplot = *plot
 		plot = tmpplot
-		plot.X, plot.Y = AutomaticAxis(plot.Elements)
+		plot.X, plot.Y = DetectAxis(plot.X, plot.Y, plot.Elements)
 	}
 
 	for _, element := range plot.Elements {
