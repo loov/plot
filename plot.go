@@ -5,10 +5,6 @@ import (
 	"math"
 )
 
-type Length float64
-
-type Point struct{ X, Y Length }
-
 type Plot struct {
 	// Size is the visual size of this plot
 	Size Point
@@ -108,26 +104,4 @@ func (plot *Plot) ToCanvas(x, y float64) Point {
 	p.Y = Length(py) * plot.Size.Y
 
 	return p
-}
-
-type Canvas interface {
-	Translate(p Point) Canvas
-	Text(glyph string, at Point, style *Style)
-	Line(points []Point, style *Style)
-	Fill(points []Point, style *Style)
-}
-
-type Style struct {
-	Color color.Color
-	Fill  color.Color
-	Size  Length
-
-	// line only
-	Dash       []Length
-	DashOffset []Length
-
-	// text only
-	Font     string
-	Rotation float64
-	Origin   Point // {-1..1, -1..1}
 }
