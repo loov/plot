@@ -236,6 +236,14 @@ func (w *writer) writePolyStyle(style *Style) {
 		w.Printf(`fill: transparent;`)
 	}
 
+	if len(style.Dash) > 0 {
+		w.Printf(`stroke-dasharray:`)
+		for _, v := range style.Dash {
+			w.Printf(` %v`, v)
+		}
+		w.Printf(`;`)
+	}
+
 	if style.Size != 0 {
 		w.Printf(`stroke-width: %vpx;`, style.Size)
 	}
@@ -246,7 +254,7 @@ func (w *writer) writePolyStyle(style *Style) {
 func convertColorToHex(color color.Color) string {
 	r, g, b, a := color.RGBA()
 	if a > 0 {
-		r, g, b = r*0xff/a, g*0xff/a, b*0xff/a
+		r, g, b, a = r*0xff/a, g*0xff/a, b*0xff/a, a/0xff
 		if r > 0xFF {
 			r = 0xFF
 		}
@@ -255,6 +263,9 @@ func convertColorToHex(color color.Color) string {
 		}
 		if b > 0xFF {
 			b = 0xFF
+		}
+		if a > 0xFF {
+			a = 0xFF
 		}
 	} else {
 		r, g, b, a = 0, 0, 0, 0

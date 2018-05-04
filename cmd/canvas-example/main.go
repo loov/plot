@@ -42,8 +42,17 @@ func main() {
 		}
 		step++
 	}
-
 	graphic.Poly(points, black)
+
+	points = []plot.Point{}
+	for x := 0.0; x < size.X; x++ {
+		p := plot.P(x, size.Y/2+math.Cos(x*16/size.X)*size.Y/3)
+		points = append(points, p)
+	}
+	graphic.Poly(points, &plot.Style{
+		Stroke: color.NRGBA{0, 0, 0, 255},
+		Dash:   []plot.Length{1, 2, 3},
+	})
 
 	pretty.Print(canvas)
 
