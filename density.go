@@ -43,13 +43,13 @@ func (plot *Density) Stats() Stats {
 }
 
 func (line *Density) Draw(plot *Plot, canvas Canvas) {
-	x, y := plot.X, plot.Y
+	x, y := &plot.X, &plot.Y
 
 	size := canvas.Bounds().Size()
 
 	kernel := line.Kernel
 	if math.IsNaN(kernel) {
-		kernel = 1
+		kernel = 4
 	}
 
 	points := []Point{}

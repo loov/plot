@@ -60,9 +60,9 @@ func New() *Plot {
 			Size:   0,
 		},
 		Fill: Style{
-			Color: nil,
-			Fill:  color.NRGBA{255, 255, 255, 255},
-			Size:  1.0,
+			Stroke: nil,
+			Fill:   color.NRGBA{255, 255, 255, 255},
+			Size:   1.0,
 		},
 	}
 }
