@@ -1,91 +1,112 @@
 package plot
 
 import (
-	"image/color"
-	"io"
 	"math"
 	"sort"
-	"strings"
-	"time"
 )
 
 type Density struct {
-	Width  float64
-	Height float64
-
-	// when LogX > 0, it will use a logarithmic X axis
-	LogX float64
-	// when LogY > 0, it will use a logarithmic Y axis
-	LogY float64
-
-	// Data parameters
-	Min float64 // NaN -> auto-detect
-	Max float64 // NaN -> auto-detect
-
-	// Lines to draw
-	Lines []*Line
+	Style
+	Label  string
+	Kernel Length
+	Data   []float64 // sorted
 }
 
-type Line struct {
-	Label string
-	Color color.Color
-	Data  []float64 // sorted
-}
-
-func NewDensity() *Density {
-	plot := &Density{}
-	plot.LogX = 50.0
-	plot.LogY = 50.0
-	plot.Min = math.NaN()
-	plot.Max = math.NaN()
-	return plot
-}
-
-func (plot *Density) LineFloat64s(label string, values []float64) {
-	line := &Line{}
-	line.Label = label
-	line.Data = values
-	sort.Float64s(line.Data)
-	plot.Lines = append(plot.Lines, line)
-}
-
-func (plot *Density) LineNanoseconds(label string, durations []time.Duration) {
-	values := make([]float64, len(durations))
-	for i, dur := range durations {
-		values[i] = float64(dur.Nanoseconds())
+func NewDensity(label string, values []float64) *Density {
+	data := append(values[:0:0], values...)
+	sort.Float64s(data)
+	return &Density{
+		Kernel: math.NaN(),
+		Label:  label,
+		Data:   data,
 	}
 }
 
-func (plot *Density) SVG() string {
-	var w strings.Builder
-	_ = plot.WriteSVG(&w)
-	return w.String()
+func (plot *Density) Stats() Stats {
+	min, avg, max := math.NaN(), math.NaN(), math.NaN()
+
+	n := len(plot.Data)
+	if n > 0 {
+		min = plot.Data[0]
+		avg = plot.Data[n/2]
+		max = plot.Data[n-1]
+	}
+
+	return Stats{
+		DiscreteX: true,
+		DiscreteY: true,
+
+		Min:    Point{min, 0},
+		Center: Point{avg, 0.2}, // todo, figure out how to get the 50% of density plot
+		Max:    Point{max, 1},
+	}
 }
 
-func (plot *Density) WriteSVG(w io.Writer) error {
-	return nil
-}
+func (line *Density) Draw(plot *Plot, canvas Canvas) {
+	x, y := plot.X, plot.Y
 
-func (line *Line) density(count int, min, max, kernel float64, plot func(x, y float64)) {
-	step := (max - min) / float64(count)
-	index := sort.SearchFloat64s(line.Data, min-kernel)
-	invkernel := 1 / kernel
-	for at := min; at <= max; at += step {
+	size := canvas.Bounds().Size()
+
+	kernel := line.Kernel
+	if math.IsNaN(kernel) {
+		kernel = 1
+	}
+
+	points := []Point{}
+	if line.Fill != nil {
+		points = append(points, Point{0, 0})
+	}
+
+	index := 0
+	previousLow := math.Inf(-1)
+	maxy := 0.0
+	for screenX := 0.0; screenX < size.X; screenX += 0.5 {
+		// at := x.FromCanvas(screenX, 0, size.X)
+		low := x.FromCanvas(screenX-kernel, 0, size.X)
+		high := x.FromCanvas(screenX+kernel, 0, size.X)
+		if low < previousLow {
+			index = sort.SearchFloat64s(line.Data, low)
+		} else {
+			for ; index < len(line.Data); index++ {
+				if line.Data[index] >= low {
+					break
+				}
+			}
+		}
+		previousLow = low
+
+		center := (low + high) / 2
+		valueKernel := (high - low) / 2
+		invValueKernel := 1 / valueKernel
+
 		sample := 0.0
-		low, high := at-kernel, at+kernel
-		for ; index < len(line.Data); index++ {
-			if line.Data[index] >= low {
+		for _, value := range line.Data[index:] {
+			if value > high {
 				break
 			}
+			sample += cubicPulse(center, 2, invValueKernel, value)
 		}
-		for _, time := range line.Data[index:] {
-			if time > high {
-				break
-			}
-			sample += cubicPulse(at, kernel, invkernel, time)
-		}
-		plot(at, sample)
+
+		maxy = math.Max(maxy, sample)
+
+		points = append(points, Point{
+			X: screenX,
+			Y: sample,
+		})
 	}
+	if line.Fill != nil {
+		points = append(points,
+			Point{size.X, 0},
+			Point{0, 0},
+		)
+	}
+
+	scale := 1 / maxy
+	for i := range points {
+		points[i].Y = y.ToCanvas(points[i].Y*scale, 0, size.Y)
+	}
+
+	canvas.Poly(points, &line.Style)
 }
 
 func cubicPulse(center, radius, invradius, at float64) float64 {

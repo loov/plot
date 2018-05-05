@@ -26,14 +26,16 @@ type Element interface {
 // Dataset represents an Element that contains data
 type Dataset interface {
 	Element
-	Stats(precentiles ...float64) Stats
+	// TODO: remove and replace with recommended Axis
+	Stats() Stats
 }
 
 type Stats struct {
-	Min         Point
-	Average     Point
-	Max         Point
-	Percentiles []Point
+	DiscreteX, DiscreteY bool
+
+	Min    Point
+	Center Point
+	Max    Point
 }
 
 func New() *Plot {
@@ -58,11 +60,15 @@ func New() *Plot {
 			Size:   0,
 		},
 		Fill: Style{
-			Stroke: nil,
-			Fill:   color.NRGBA{128, 128, 128, 255},
-			Size:   1.0,
+			Color: nil,
+			Fill:  color.NRGBA{255, 255, 255, 255},
+			Size:  1.0,
 		},
 	}
+}
+
+func (plot *Plot) Add(element ...Element) {
+	plot.Elements = append(plot.Elements, element...)
 }
 
 func (plot *Plot) Draw(canvas Canvas) {
@@ -70,7 +76,7 @@ func (plot *Plot) Draw(canvas Canvas) {
 		tmpplot := &Plot{}
 		*tmpplot = *plot
 		plot = tmpplot
-		plot.X, plot.Y = DetectAxis(plot.X, plot.Y, plot.Elements)
+		plot.X, plot.Y = detectAxis(plot.X, plot.Y, plot.Elements)
 	}
 
 	for _, element := range plot.Elements {
