@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 	"io/ioutil"
 	"math/rand"
@@ -19,20 +20,24 @@ func main() {
 
 	p := plot.New()
 
+	// p.Y.SetLogarithmic(-50)
 	p.Add(plot.NewGrid())
 
 	red := plot.NewDensity("Red", plot.DurationToNanoseconds(xs))
 	red.Stroke = color.NRGBA{200, 0, 0, 255}
-	red.Fill = color.NRGBA{200, 0, 0, 10}
+	red.Fill = color.NRGBA{200, 0, 0, 40}
 	p.Add(red)
 
 	green := plot.NewDensity("Green", plot.DurationToNanoseconds(ys))
 	green.Stroke = color.NRGBA{0, 200, 0, 255}
-	green.Fill = color.NRGBA{0, 255, 0, 10}
+	green.Fill = color.NRGBA{0, 200, 0, 40}
 	p.Add(green)
 
-	svg := plot.NewSVG(600, 300)
-	p.Draw(svg)
+	for x := -30; x < 60; x += 10 {
+		p.X.SetLogarithmic(float64(x))
+		svg := plot.NewSVG(600, 300)
+		p.Draw(svg)
+		ioutil.WriteFile(fmt.Sprintf("result_%v.svg", x), svg.Bytes(), 0755)
+	}
 
-	ioutil.WriteFile("result.svg", svg.Bytes(), 0755)
 }

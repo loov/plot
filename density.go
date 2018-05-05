@@ -43,7 +43,7 @@ func (plot *Density) Stats() Stats {
 }
 
 func (line *Density) Draw(plot *Plot, canvas Canvas) {
-	x, y := &plot.X, &plot.Y
+	x, y := plot.X, plot.Y
 
 	size := canvas.Bounds().Size()
 
@@ -52,9 +52,11 @@ func (line *Density) Draw(plot *Plot, canvas Canvas) {
 		kernel = 4
 	}
 
+	xmin, xmax := x.ToCanvas(x.Min, 0, size.X), x.ToCanvas(x.Max, 0, size.X)
+
 	points := []Point{}
 	if line.Fill != nil {
-		points = append(points, Point{0, 0})
+		points = append(points, Point{xmin, 0})
 	}
 
 	index := 0
@@ -94,10 +96,11 @@ func (line *Density) Draw(plot *Plot, canvas Canvas) {
 			Y: sample,
 		})
 	}
+
 	if line.Fill != nil {
 		points = append(points,
-			Point{size.X, 0},
-			Point{0, 0},
+			Point{xmax, 0},
+			Point{xmin, 0},
 		)
 	}
 

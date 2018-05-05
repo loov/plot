@@ -2,14 +2,11 @@ package plot
 
 import (
 	"image/color"
-	"math"
 )
 
 type Plot struct {
-	// Size is the visual size of this plot
-	Size Point
 	// X, Y are the axis information
-	X, Y Axis
+	X, Y *Axis
 	// Elements
 	Elements []Element
 	// DefaultStyle
@@ -39,16 +36,12 @@ type Stats struct {
 }
 
 func New() *Plot {
+	x, y := NewAxis(), NewAxis()
+	y.Flip = true
+
 	return &Plot{
-		Size: Point{800, 600},
-		X: Axis{
-			Min: math.NaN(),
-			Max: math.NaN(),
-		},
-		Y: Axis{
-			Min: math.NaN(),
-			Max: math.NaN(),
-		},
+		X: x,
+		Y: y,
 		Line: Style{
 			Stroke: color.NRGBA{0, 0, 0, 255},
 			Fill:   nil,
@@ -80,23 +73,6 @@ func (plot *Plot) Draw(canvas Canvas) {
 	}
 
 	for _, element := range plot.Elements {
-		element.Draw(plot, canvas)
+		element.Draw(plot, canvas.Context(canvas.Bounds()))
 	}
-}
-
-func (plot *Plot) ToCanvas(x, y float64) Point {
-	var p Point
-	px := (x - plot.X.Min) / (plot.X.Max - plot.X.Min)
-	if plot.X.Transform != nil {
-		px = plot.X.Transform(px)
-	}
-	p.X = Length(px) * plot.Size.X
-
-	py := (y - plot.Y.Min) / (plot.Y.Max - plot.Y.Min)
-	if plot.Y.Transform != nil {
-		py = plot.Y.Transform(py)
-	}
-	p.Y = Length(py) * plot.Size.Y
-
-	return p
 }

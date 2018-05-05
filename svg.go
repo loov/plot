@@ -151,11 +151,15 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 		}
 
 		if len(svg.elements) > 0 {
-			w.Print("<g>")
+			if len(svg.layers) > 0 {
+				w.Print("<g>")
+			}
 			for i := range svg.elements {
 				writeElement(svg, &svg.elements[i])
 			}
-			w.Print("</g>")
+			if len(svg.layers) > 0 {
+				w.Print("</g>")
+			}
 		}
 
 		for _, layer := range svg.layers[after:] {
