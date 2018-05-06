@@ -7,18 +7,20 @@ import (
 
 type Density struct {
 	Style
-	Label  string
-	Kernel Length
-	Data   []float64 // sorted
+	Label      string
+	Kernel     Length
+	Normalized bool
+	Data       []float64 // sorted
 }
 
 func NewDensity(label string, values []float64) *Density {
 	data := append(values[:0:0], values...)
 	sort.Float64s(data)
 	return &Density{
-		Kernel: math.NaN(),
-		Label:  label,
-		Data:   data,
+		Kernel:     math.NaN(),
+		Label:      label,
+		Normalized: true,
+		Data:       data,
 	}
 }
 
@@ -37,7 +39,7 @@ func (line *Density) Stats() Stats {
 		DiscreteY: true,
 
 		Min:    Point{min, 0},
-		Center: Point{avg, 0.2}, // todo, figure out how to get the 50% of density plot
+		Center: Point{avg, 0.5},
 		Max:    Point{max, 1},
 	}
 }
@@ -47,12 +49,17 @@ func (line *Density) Draw(plot *Plot, canvas Canvas) {
 
 	size := canvas.Bounds().Size()
 
-	kernel := line.Kernel
-	if math.IsNaN(kernel) {
-		kernel = 4
+	xmin, xmax := x.ToCanvas(x.Min, 0, size.X), x.ToCanvas(x.Max, 0, size.X)
+	if xmin > xmax {
+		xmin, xmax = xmax, xmin
 	}
 
-	xmin, xmax := x.ToCanvas(x.Min, 0, size.X), x.ToCanvas(x.Max, 0, size.X)
+	kernel := line.Kernel
+	if math.IsNaN(kernel) {
+		// default to 4px wide kernel
+		kernel = 4 * (x.Max - x.Min) / size.X
+	}
+	invkernel := 1 / kernel
 
 	points := []Point{}
 	if line.Fill != nil {
@@ -63,9 +70,9 @@ func (line *Density) Draw(plot *Plot, canvas Canvas) {
 	previousLow := math.Inf(-1)
 	maxy := 0.0
 	for screenX := 0.0; screenX < size.X; screenX += 0.5 {
-		// at := x.FromCanvas(screenX, 0, size.X)
-		low := x.FromCanvas(screenX-kernel, 0, size.X)
-		high := x.FromCanvas(screenX+kernel, 0, size.X)
+		center := x.FromCanvas(screenX, 0, size.X)
+		low, high := center-kernel, center+kernel
+
 		if low < previousLow {
 			index = sort.SearchFloat64s(line.Data, low)
 		} else {
@@ -77,16 +84,12 @@ func (line *Density) Draw(plot *Plot, canvas Canvas) {
 		}
 		previousLow = low
 
-		center := (low + high) / 2
-		valueKernel := (high - low) / 2
-		invValueKernel := 1 / valueKernel
-
 		sample := 0.0
 		for _, value := range line.Data[index:] {
 			if value > high {
 				break
 			}
-			sample += cubicPulse(center, 2, invValueKernel, value)
+			sample += cubicPulse(center, kernel, invkernel, value)
 		}
 
 		maxy = math.Max(maxy, sample)
@@ -104,7 +107,11 @@ func (line *Density) Draw(plot *Plot, canvas Canvas) {
 		)
 	}
 
-	scale := 1 / maxy
+	scale := kernel / float64(len(line.Data))
+	if line.Normalized {
+		scale = 1 / maxy
+	}
+
 	for i := range points {
 		points[i].Y = y.ToCanvas(points[i].Y*scale, 0, size.Y)
 	}

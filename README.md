@@ -15,3 +15,4 @@ Everything here is subject to change.
 * [ ] Add color and style palettes
 * [ ] Fix density plot scaling
 * [ ] Fix violin plot scaling
+* [ ] Figure out how to find the 50% percentile of densities

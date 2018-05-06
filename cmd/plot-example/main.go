@@ -31,11 +31,13 @@ func main() {
 		}
 		datasets = append(datasets, dataset)
 
-		or, og, ob := r(), r(), r()
-		for i := 0; i < N; i++ {
-			dataset.Red[i] = 20 * (or + r())
-			dataset.Green[i] = 20 * (og + r()*r())
-			dataset.Blue[i] = 20 * (ob + r()*math.Sin(r()))
+		{
+			or, og, ob := r(), r(), r()
+			for k := 0; k < N; k++ {
+				dataset.Red[k] = 20 * (or + r())
+				dataset.Green[k] = 20 * (og + r()*r())
+				dataset.Blue[k] = 20 * (ob + r()*math.Sin(r()))
+			}
 		}
 	}
 

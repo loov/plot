@@ -7,20 +7,22 @@ import (
 
 type Violin struct {
 	Style
-	Side   float64
-	Label  string
-	Kernel Length
-	Data   []float64 // sorted
+	Side       float64
+	Label      string
+	Kernel     Length
+	Normalized bool
+	Data       []float64 // sorted
 }
 
 func NewViolin(label string, values []float64) *Violin {
 	data := append(values[:0:0], values...)
 	sort.Float64s(data)
 	return &Violin{
-		Kernel: math.NaN(),
-		Side:   1,
-		Label:  label,
-		Data:   data,
+		Kernel:     math.NaN(),
+		Side:       1,
+		Label:      label,
+		Normalized: true,
+		Data:       data,
 	}
 }
 
@@ -49,15 +51,17 @@ func (line *Violin) Draw(plot *Plot, canvas Canvas) {
 
 	size := canvas.Bounds().Size()
 
-	kernel := line.Kernel
-	if math.IsNaN(kernel) {
-		kernel = 4
-	}
-
 	ymin, ymax := y.ToCanvas(y.Min, 0, size.Y), y.ToCanvas(y.Max, 0, size.Y)
 	if ymin > ymax {
 		ymin, ymax = ymax, ymin
 	}
+
+	kernel := line.Kernel
+	if math.IsNaN(kernel) {
+		// default to 4px wide kernel
+		kernel = 4 * (y.Max - y.Min) / size.Y
+	}
+	invkernel := 1 / kernel
 
 	points := []Point{}
 	if line.Fill != nil || line.Side == 0 {
@@ -68,12 +72,8 @@ func (line *Violin) Draw(plot *Plot, canvas Canvas) {
 	previousLow := math.Inf(-1)
 	maxx := 0.0
 	for screenY := 0.0; screenY < size.Y; screenY += 0.5 {
-		low := y.FromCanvas(screenY-kernel, 0, size.Y)
-		high := y.FromCanvas(screenY+kernel, 0, size.Y)
-
-		if low > high {
-			high, low = low, high
-		}
+		center := y.FromCanvas(screenY, 0, size.Y)
+		low, high := center-kernel, center+kernel
 
 		if low < previousLow {
 			index = sort.SearchFloat64s(line.Data, low)
@@ -86,16 +86,12 @@ func (line *Violin) Draw(plot *Plot, canvas Canvas) {
 		}
 		previousLow = low
 
-		center := (low + high) / 2
-		valueKernel := (high - low) / 2
-		invValueKernel := 1 / valueKernel
-
 		sample := 0.0
 		for _, value := range line.Data[index:] {
 			if value > high {
 				break
 			}
-			sample += cubicPulse(center, 2, invValueKernel, value)
+			sample += cubicPulse(center, kernel, invkernel, value)
 		}
 		maxx = math.Max(maxx, sample)
 
@@ -105,12 +101,16 @@ func (line *Violin) Draw(plot *Plot, canvas Canvas) {
 		})
 	}
 
-	if line.Fill != nil {
+	if line.Fill != nil || line.Side == 0 {
 		points = append(points, Point{0, ymax})
 	}
 
+	scale := kernel / float64(len(line.Data))
+	if line.Normalized {
+		scale = 1 / maxx
+	}
+
 	if line.Side == 0 {
-		scale := 1 / maxx
 		otherSide := make([]Point, len(points))
 		for i := range points {
 			k := len(points) - i - 1
@@ -120,7 +120,7 @@ func (line *Violin) Draw(plot *Plot, canvas Canvas) {
 		}
 		points = append(points, otherSide...)
 	} else {
-		scale := line.Side * 1 / maxx
+		scale *= line.Side
 		for i := range points {
 			points[i].X = x.ToCanvas(points[i].X*scale, 0, size.X)
 		}
