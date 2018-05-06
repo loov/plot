@@ -17,7 +17,60 @@ type Tick struct {
 
 type AutomaticTicks struct{}
 
-func (AutomaticTicks) Ticks(axis *Axis) []Tick {
+func (AutomaticTicks) logarithmicTicks(axis *Axis, transform *LogTransform) []Tick {
+	ticks := make([]Tick, 0)
+
+	low, high := axis.Min, axis.Max
+	if low > high {
+		low, high = high, low
+	}
+
+	previous := math.NaN()
+
+	inRange := func(value float64) bool {
+		return low < value && value < high
+	}
+
+	if inRange(0) {
+		ticks = append(ticks, Tick{Value: 0, Label: "0"})
+		previous = 0
+	}
+
+	for power := 0; power < 10; power++ {
+		value := math.Pow(transform.base, float64(power))
+		if inRange(value) {
+			ticks = append(ticks, Tick{
+				Value: value,
+				Label: fmt.Sprintf("%.0f", value),
+			})
+		}
+		if inRange(-value) {
+			ticks = append(ticks, Tick{
+				Value: -value,
+				Label: fmt.Sprintf("%.0f", -value),
+			})
+		}
+
+		if !math.IsNaN(previous) && axis.MinorTicks > 0 {
+			minorSpacing := (value - previous) / float64(axis.MinorTicks)
+			minor := previous
+			for i := 0; i < axis.MinorTicks; i++ {
+				if inRange(minor) {
+					ticks = append(ticks, Tick{Minor: true, Value: minor})
+				}
+				if inRange(-minor) {
+					ticks = append(ticks, Tick{Minor: true, Value: -minor})
+				}
+				minor += minorSpacing
+			}
+		}
+		previous = value
+	}
+
+	return ticks
+}
+
+func (AutomaticTicks) linearTicks(axis *Axis) []Tick {
 	majorSpacing := (axis.Max - axis.Min) / float64(axis.MajorTicks)
 	minorSpacing := majorSpacing / float64(axis.MinorTicks)
 
@@ -63,6 +116,13 @@ func (AutomaticTicks) Ticks(axis *Axis) []Tick {
 	}
 
 	return ticks
+}
+
+func (ticks AutomaticTicks) Ticks(axis *Axis) []Tick {
+	if transform, ok := axis.Transform.(*LogTransform); ok {
+		return ticks.logarithmicTicks(axis, transform)
+	}
+	return ticks.linearTicks(axis)
 }
 
 type ManualTicks []Tick
