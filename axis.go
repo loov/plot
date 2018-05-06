@@ -159,8 +159,8 @@ func (axis *Axis) SetScreenLog1P(compress float64) {
 		return
 	}
 
-	flip := compress < 0
-	if flip {
+	invert := compress < 0
+	if invert {
 		compress = -compress
 	}
 	mul := 1 / math.Log1p(compress)
@@ -175,12 +175,13 @@ func (axis *Axis) SetScreenLog1P(compress float64) {
 		return (math.Pow(compress+1, v) - 1) * invCompress
 	}
 
-	if flip {
+	if invert {
 		tx.Transform, tx.Inverse = tx.Inverse, tx.Transform
 	}
 }
 
 type LogTransform struct {
+	invert  bool
 	base    float64
 	mulbase float64 // 1 / Log1p(base)
 
@@ -191,13 +192,18 @@ type LogTransform struct {
 }
 
 func NewLogTransform(base float64) *LogTransform {
+	invert := base < 0
+	if invert {
+		base = -base
+	}
 	return &LogTransform{
+		invert:  invert,
 		base:    base,
 		mulbase: 1 / math.Log1p(base),
 	}
 }
 
-func (tx *LogTransform) transform(v float64) float64 {
+func (tx *LogTransform) log(v float64) float64 {
 	if v == 0 {
 		return 0
 	} else if v < 0 {
@@ -207,7 +213,7 @@ func (tx *LogTransform) transform(v float64) float64 {
 	}
 }
 
-func (tx *LogTransform) inverse(v float64) float64 {
+func (tx *LogTransform) ilog(v float64) float64 {
 	if v == 0 {
 		return 0
 	} else if v < 0 {
@@ -216,6 +222,20 @@ func (tx *LogTransform) inverse(v float64) float64 {
 		return -math.Pow(tx.base, -v) + 1
 	}
 	return v
+}
+
+func (tx *LogTransform) transform(v float64) float64 {
+	if tx.invert {
+		return tx.ilog(v)
+	}
+	return tx.log(v)
+}
+
+func (tx *LogTransform) inverse(v float64) float64 {
+	if tx.invert {
+		return tx.log(v)
+	}
+	return tx.ilog(v)
 }
 
 func (tx *LogTransform) lowhigh(axis *Axis) (float64, float64) {
@@ -229,8 +249,8 @@ func (tx *LogTransform) lowhigh(axis *Axis) (float64, float64) {
 }
 
 func (tx *LogTransform) ToCanvas(axis *Axis, v float64, screenMin, screenMax Length) Length {
-	low, high := tx.lowhigh(axis)
 	v = tx.transform(v)
+	low, high := tx.lowhigh(axis)
 	n := (v - low) / (high - low)
 	return screenMin + n*(screenMax-screenMin)
 }
