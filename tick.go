@@ -1,6 +1,9 @@
 package plot
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 type Ticks interface {
 	Ticks(axis *Axis) []Tick
@@ -8,21 +11,19 @@ type Ticks interface {
 
 type Tick struct {
 	Minor bool
+	Label string
 	Value float64
 }
-
-func (tick *Tick) Label() string {
-	if tick.Minor {
-		return ""
-	}
-	return fmt.Sprintf("%.2f", tick.Value)
-}
-
 type AutomaticTicks struct{}
 
 func (AutomaticTicks) Ticks(axis *Axis) []Tick {
 	majorSpacing := (axis.Max - axis.Min) / float64(axis.MajorTicks)
 	minorSpacing := majorSpacing / float64(axis.MinorTicks)
+
+	frac := -int(math.Floor(math.Log10(majorSpacing)))
+	if frac < 0 {
+		frac = 0
+	}
 
 	ticks := make([]Tick, 0, axis.MajorTicks*axis.MinorTicks)
 
@@ -30,6 +31,7 @@ func (AutomaticTicks) Ticks(axis *Axis) []Tick {
 	for i := 0; i < axis.MajorTicks; i++ {
 		ticks = append(ticks, Tick{
 			Value: major,
+			Label: fmt.Sprintf("%.[2]*[1]f", major, frac),
 		})
 
 		minor := major
@@ -73,9 +75,8 @@ func (ticklabels *TickLabels) Draw(plot *Plot, canvas Canvas) {
 	if ticklabels.X {
 		for _, tick := range x.Ticks.Ticks(x) {
 			p := x.ToCanvas(tick.Value, 0, sz.X)
-			label := tick.Label()
-			if label != "" {
-				canvas.Text(label, P(p, ymin), style)
+			if tick.Label != "" {
+				canvas.Text(tick.Label, P(p, ymin), style)
 			}
 		}
 	}
@@ -83,9 +84,8 @@ func (ticklabels *TickLabels) Draw(plot *Plot, canvas Canvas) {
 	if ticklabels.Y {
 		for _, tick := range y.Ticks.Ticks(y) {
 			p := y.ToCanvas(tick.Value, 0, sz.Y)
-			label := tick.Label()
-			if label != "" {
-				canvas.Text(label, P(xmin, p), style)
+			if tick.Label != "" {
+				canvas.Text(tick.Label, P(xmin, p), style)
 			}
 		}
 	}
