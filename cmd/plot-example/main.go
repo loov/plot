@@ -44,14 +44,17 @@ func main() {
 	p.Add(stack)
 	for _, dataset := range datasets {
 		red := plot.NewDensity("Red", dataset.Red)
+		red.Class = "red"
 		red.Stroke = color.NRGBA{200, 0, 0, 255}
 		red.Fill = color.NRGBA{200, 0, 0, 40}
 
 		green := plot.NewDensity("Green", dataset.Green)
+		green.Class = "green"
 		green.Stroke = color.NRGBA{0, 200, 0, 255}
 		green.Fill = color.NRGBA{0, 200, 0, 40}
 
 		blue := plot.NewDensity("Blue", dataset.Blue)
+		blue.Class = "blue"
 		blue.Stroke = color.NRGBA{0, 0, 200, 255}
 		blue.Fill = color.NRGBA{0, 0, 200, 40}
 

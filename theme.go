@@ -15,6 +15,9 @@ type Style struct {
 	Font     string
 	Rotation float64
 	Origin   Point // {-1..1, -1..1}
+
+	// SVG
+	Class string
 }
 
 func (style *Style) mustExist() {

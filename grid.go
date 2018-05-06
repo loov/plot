@@ -23,16 +23,19 @@ func (grid *Grid) Draw(plot *Plot, canvas Canvas) {
 	}
 
 	canvas.Rect(canvas.Bounds(), &Style{
-		Fill: theme.Fill,
+		Fill:  theme.Fill,
+		Class: "grid-fill",
 	})
 
 	major := &Style{
 		Size:   1,
 		Stroke: theme.Major,
+		Class:  "grid-major",
 	}
 	minor := &Style{
 		Size:   1,
 		Stroke: theme.Minor,
+		Class:  "grid-minor",
 	}
 
 	for _, tick := range x.Ticks.Ticks(x) {

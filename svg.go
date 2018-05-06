@@ -196,6 +196,12 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 
 func (w *writer) writeTextStyle(style *Style) {
 	// TODO: merge with writePolyStyle
+	if style.Class != "" {
+		w.Printf(` class='`)
+		xml.EscapeText(w, []byte(style.Class))
+		w.Printf(`'`)
+	}
+
 	if style.Font == "" && style.Size == 0 && style.Stroke == nil && style.Fill == nil {
 		return
 	}
@@ -221,6 +227,12 @@ func (w *writer) writeTextStyle(style *Style) {
 }
 
 func (w *writer) writePolyStyle(style *Style) {
+	if style.Class != "" {
+		w.Printf(` class='`)
+		xml.EscapeText(w, []byte(style.Class))
+		w.Printf(`'`)
+	}
+
 	if style.Size == 0 && style.Stroke == nil && style.Fill == nil && len(style.Dash) == 0 {
 		return
 	}
