@@ -78,7 +78,7 @@ func NewTheme() Theme {
 		Grid: GridTheme{
 			Fill:  color.NRGBA{240, 240, 240, 255},
 			Major: color.NRGBA{255, 255, 255, 255},
-			Minor: color.NRGBA{255, 255, 255, 80},
+			Minor: color.NRGBA{255, 255, 255, 255},
 		},
 	}
 }

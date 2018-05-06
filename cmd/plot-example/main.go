@@ -63,8 +63,21 @@ func main() {
 		)
 	}
 
-	// p.X.SetLogarithmic(float64(10))
-	svg := plot.NewSVG(800, float64(100*len(datasets)))
+	p.X.Transform = plot.NewLogTransform(10)
+	p.X.Ticks = plot.ManualTicks{
+		{Value: -1000, Label: "-1000"},
+		{Value: -100, Label: "-100"},
+		{Value: -10, Label: "-10"},
+		{Value: -1, Label: "-1"},
+		{Value: 0, Label: "0"},
+		{Value: 1, Label: "1"},
+		{Value: 10, Label: "10"},
+		{Value: 100, Label: "100"},
+		{Value: 1000, Label: "1000"},
+	}
+	p.X.Min, p.X.Max = -10000, 10000
+	p.X.MajorTicks, p.X.MinorTicks = 10, 10
+	svg := plot.NewSVG(800, float64(150*len(datasets)))
 	p.Draw(svg)
 	ioutil.WriteFile("result.svg", svg.Bytes(), 0755)
 }

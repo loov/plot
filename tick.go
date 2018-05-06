@@ -14,6 +14,7 @@ type Tick struct {
 	Label string
 	Value float64
 }
+
 type AutomaticTicks struct{}
 
 func (AutomaticTicks) Ticks(axis *Axis) []Tick {
@@ -28,7 +29,11 @@ func (AutomaticTicks) Ticks(axis *Axis) []Tick {
 	ticks := make([]Tick, 0, axis.MajorTicks*axis.MinorTicks)
 
 	major := axis.Min
+	hasZero := false
 	for i := 0; i < axis.MajorTicks; i++ {
+		if major == 0 {
+			hasZero = true
+		}
 		ticks = append(ticks, Tick{
 			Value: major,
 			Label: fmt.Sprintf("%.[2]*[1]f", major, frac),
@@ -36,6 +41,10 @@ func (AutomaticTicks) Ticks(axis *Axis) []Tick {
 
 		minor := major
 		for k := 0; k < axis.MinorTicks; k++ {
+			if minor == 0 {
+				minor += minorSpacing
+				continue
+			}
 			ticks = append(ticks, Tick{
 				Minor: true,
 				Value: minor,
@@ -46,8 +55,19 @@ func (AutomaticTicks) Ticks(axis *Axis) []Tick {
 		major += majorSpacing
 	}
 
+	if !hasZero && (axis.Min <= 0) == (0 <= axis.Max) {
+		ticks = append(ticks, Tick{
+			Value: 0,
+			Label: "0",
+		})
+	}
+
 	return ticks
 }
+
+type ManualTicks []Tick
+
+func (ticks ManualTicks) Ticks(axis *Axis) []Tick { return []Tick(ticks) }
 
 type TickLabels struct {
 	X, Y  bool
