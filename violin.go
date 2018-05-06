@@ -126,8 +126,6 @@ func (line *Violin) Draw(plot *Plot, canvas Canvas) {
 		}
 	}
 
-	_, _, _ = ymin, ymax, maxx
-
 	if !line.Style.IsZero() {
 		canvas.Poly(points, &line.Style)
 	} else {
