@@ -109,7 +109,11 @@ func (line *Density) Draw(plot *Plot, canvas Canvas) {
 		points[i].Y = y.ToCanvas(points[i].Y*scale, 0, size.Y)
 	}
 
-	canvas.Poly(points, &line.Style)
+	if !line.Style.IsZero() {
+		canvas.Poly(points, &line.Style)
+	} else {
+		canvas.Poly(points, &plot.Theme.Line)
+	}
 }
 
 func cubicPulse(center, radius, invradius, at float64) float64 {

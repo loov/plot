@@ -1,18 +1,12 @@
 package plot
 
-import (
-	"image/color"
-)
-
 type Plot struct {
 	// X, Y are the axis information
 	X, Y *Axis
 	// Elements
-	Elements []Element
+	Elements
 	// DefaultStyle
-	Line Style
-	Font Style
-	Fill Style
+	Theme
 }
 
 // Element is a drawable plot element
@@ -27,41 +21,15 @@ type Dataset interface {
 	Stats() Stats
 }
 
-type Stats struct {
-	DiscreteX, DiscreteY bool
-
-	Min    Point
-	Center Point
-	Max    Point
-}
-
 func New() *Plot {
 	x, y := NewAxis(), NewAxis()
 	y.Flip = true
 
 	return &Plot{
-		X: x,
-		Y: y,
-		Line: Style{
-			Stroke: color.NRGBA{0, 0, 0, 255},
-			Fill:   nil,
-			Size:   1.0,
-		},
-		Font: Style{
-			Stroke: nil,
-			Fill:   color.NRGBA{0, 0, 0, 255},
-			Size:   0,
-		},
-		Fill: Style{
-			Stroke: nil,
-			Fill:   color.NRGBA{255, 255, 255, 255},
-			Size:   1.0,
-		},
+		X:     x,
+		Y:     y,
+		Theme: NewTheme(),
 	}
-}
-
-func (plot *Plot) Add(element ...Element) {
-	plot.Elements = append(plot.Elements, element...)
 }
 
 func (plot *Plot) Draw(canvas Canvas) {

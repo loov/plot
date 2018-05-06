@@ -119,8 +119,7 @@ func detectAxis(x, y *Axis, elements []Element) (X, Y *Axis) {
 	tx, ty := NewAxis(), NewAxis()
 	*tx, *ty = *x, *y
 	for _, element := range elements {
-		if dataset, ok := element.(Dataset); ok {
-			stats := dataset.Stats()
+		if stats, ok := tryGetStats(element); ok {
 			tx.Include(stats.Min.X, stats.Max.X)
 			ty.Include(stats.Min.Y, stats.Max.Y)
 		}
