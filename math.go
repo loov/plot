@@ -31,3 +31,15 @@ func niceNumber(span float64, round bool) float64 {
 	}
 	return nice * math.Pow(10, exp)
 }
+
+func cubicPulse(center, radius, invradius, at float64) float64 {
+	at = at - center
+	if at < 0 {
+		at = -at
+	}
+	if at > radius {
+		return 0
+	}
+	at *= invradius
+	return 1 - at*at*(3-2*at)
+}

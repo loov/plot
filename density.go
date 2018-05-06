@@ -22,14 +22,14 @@ func NewDensity(label string, values []float64) *Density {
 	}
 }
 
-func (plot *Density) Stats() Stats {
+func (line *Density) Stats() Stats {
 	min, avg, max := math.NaN(), math.NaN(), math.NaN()
 
-	n := len(plot.Data)
+	n := len(line.Data)
 	if n > 0 {
-		min = plot.Data[0]
-		avg = plot.Data[n/2]
-		max = plot.Data[n-1]
+		min = line.Data[0]
+		avg = line.Data[n/2]
+		max = line.Data[n-1]
 	}
 
 	return Stats{
@@ -114,16 +114,4 @@ func (line *Density) Draw(plot *Plot, canvas Canvas) {
 	} else {
 		canvas.Poly(points, &plot.Theme.Line)
 	}
-}
-
-func cubicPulse(center, radius, invradius, at float64) float64 {
-	at = at - center
-	if at < 0 {
-		at = -at
-	}
-	if at > radius {
-		return 0
-	}
-	at *= invradius
-	return 1 - at*at*(3-2*at)
 }

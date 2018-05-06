@@ -23,7 +23,7 @@ func main() {
 	}
 
 	for i := 0; i < 3; i++ {
-		const N = 1 << 20
+		const N = 1 << 15
 		dataset := &Dataset{
 			Red:   make([]float64, N),
 			Green: make([]float64, N),
@@ -40,20 +40,23 @@ func main() {
 	}
 
 	p := plot.New()
-	stack := plot.NewVStack()
+	stack := plot.NewHStack()
 	p.Add(stack)
 	for _, dataset := range datasets {
-		red := plot.NewDensity("Red", dataset.Red)
+		red := plot.NewViolin("Red", dataset.Red)
+		red.Side = 0
 		red.Class = "red"
 		red.Stroke = color.NRGBA{200, 0, 0, 255}
 		red.Fill = color.NRGBA{200, 0, 0, 40}
 
-		green := plot.NewDensity("Green", dataset.Green)
+		green := plot.NewViolin("Green", dataset.Green)
+		green.Side = 1
 		green.Class = "green"
 		green.Stroke = color.NRGBA{0, 200, 0, 255}
 		green.Fill = color.NRGBA{0, 200, 0, 40}
 
-		blue := plot.NewDensity("Blue", dataset.Blue)
+		blue := plot.NewViolin("Blue", dataset.Blue)
+		blue.Side = -1
 		blue.Class = "blue"
 		blue.Stroke = color.NRGBA{0, 0, 200, 255}
 		blue.Fill = color.NRGBA{0, 0, 200, 40}
@@ -66,21 +69,6 @@ func main() {
 		)
 	}
 
-	p.X.Transform = plot.NewLogTransform(10)
-	/*
-		p.X.Ticks = plot.ManualTicks{
-			{Value: -1000, Label: "-1000"},
-			{Value: -100, Label: "-100"},
-			{Value: -10, Label: "-10"},
-			{Value: -1, Label: "-1"},
-			{Value: 0, Label: "0"},
-			{Value: 1, Label: "1"},
-			{Value: 10, Label: "10"},
-			{Value: 100, Label: "100"},
-			{Value: 1000, Label: "1000"},
-		}*/
-	p.X.Min, p.X.Max = -10000, 10000
-	p.X.MajorTicks, p.X.MinorTicks = 10, 10
 	svg := plot.NewSVG(800, float64(150*len(datasets)))
 	p.Draw(svg)
 	ioutil.WriteFile("result.svg", svg.Bytes(), 0755)
