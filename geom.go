@@ -13,6 +13,7 @@ var nanPoint = Point{
 
 func P(x, y Length) Point { return Point{x, y} }
 
+func (a Point) Empty() bool       { return a == Point{} }
 func (a Point) Neg() Point        { return Point{-a.X, -a.Y} }
 func (a Point) Add(b Point) Point { return Point{a.X + b.X, a.Y + b.Y} }
 func (a Point) Sub(b Point) Point { return Point{a.X - b.X, a.Y - b.Y} }
@@ -27,7 +28,9 @@ type Rect struct{ Min, Max Point }
 
 func R(x0, y0, x1, y1 Length) Rect { return Rect{Point{x0, y0}, Point{x1, y1}} }
 
-func (r Rect) Zero() Rect               { return Rect{Point{0, 0}, r.Max.Sub(r.Min)} }
+func (r Rect) Zero() Rect  { return Rect{Point{0, 0}, r.Max.Sub(r.Min)} }
+func (r Rect) Empty() bool { return r.Min.Empty() && r.Max.Empty() }
+
 func (r Rect) Size() Point              { return r.Max.Sub(r.Min) }
 func (r Rect) Offset(by Point) Rect     { return Rect{r.Min.Add(by), r.Max.Add(by)} }
 func (r Rect) Shrink(radius Point) Rect { return Rect{r.Min.Add(radius), r.Max.Sub(radius)} }

@@ -24,6 +24,10 @@ func tryGetStats(element Element) (Stats, bool) {
 func maximalStats(els []Element) Stats {
 	finalstats := nanStats
 	for _, element := range els {
+		if element == nil {
+			continue
+		}
+
 		if elstats, ok := tryGetStats(element); ok {
 			if math.IsNaN(finalstats.Min.X) {
 				finalstats.Min.X = elstats.Min.X
