@@ -17,7 +17,9 @@ type Tick struct {
 
 type AutomaticTicks struct{}
 
-func (AutomaticTicks) logarithmicTicks(axis *Axis, transform *LogTransform) []Tick {
+func (at AutomaticTicks) logarithmicTicks(axis *Axis, transform *Log1pTransform) []Tick {
+	//TODO: fix, we don't properly assign labels for logarithmic axis
+
 	ticks := make([]Tick, 0)
 
 	low, high := axis.Min, axis.Max
@@ -119,9 +121,9 @@ func (AutomaticTicks) linearTicks(axis *Axis) []Tick {
 }
 
 func (ticks AutomaticTicks) Ticks(axis *Axis) []Tick {
-	if transform, ok := axis.Transform.(*LogTransform); ok {
-		return ticks.logarithmicTicks(axis, transform)
-	}
+	// if transform, ok := axis.Transform.(*Log1pTransform); ok {
+	// 	return ticks.logarithmicTicks(axis, transform)
+	// }
 	return ticks.linearTicks(axis)
 }
 

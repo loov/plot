@@ -13,44 +13,6 @@ var nanPoint = Point{
 
 func P(x, y Length) Point { return Point{x, y} }
 
-func Ps(cs ...Length) []Point {
-	if len(cs)%2 != 0 {
-		panic("must give x, y pairs")
-	}
-	ps := make([]Point, len(cs)/2)
-	for i := range ps {
-		ps[i] = Point{cs[i*2], cs[i*2+1]}
-	}
-	return ps
-}
-
-func Points(x, y []float64) []Point {
-	n := len(x)
-	if n < len(y) {
-		n = len(y)
-	}
-
-	points := make([]Point, 0, n)
-	for i := 0; i < n; i++ {
-		var p Point
-		if i < len(x) {
-			p.X = x[i]
-		} else {
-			p.X = float64(i)
-		}
-
-		if i < len(y) {
-			p.Y = y[i]
-		} else {
-			p.Y = float64(i)
-		}
-
-		points = append(points, p)
-	}
-
-	return points
-}
-
 func (a Point) Neg() Point        { return Point{-a.X, -a.Y} }
 func (a Point) Add(b Point) Point { return Point{a.X + b.X, a.Y + b.Y} }
 func (a Point) Sub(b Point) Point { return Point{a.X - b.X, a.Y - b.Y} }
@@ -100,4 +62,44 @@ func (r Rect) Row(i, count int) Rect {
 	y1 := r.Min.Y + float64(i+1)*(r.Max.Y-r.Min.Y)/float64(count)
 
 	return R(r.Min.X, y0, r.Max.X, y1)
+}
+
+// Convenience functions
+
+func Ps(cs ...Length) []Point {
+	if len(cs)%2 != 0 {
+		panic("must give x, y pairs")
+	}
+	ps := make([]Point, len(cs)/2)
+	for i := range ps {
+		ps[i] = Point{cs[i*2], cs[i*2+1]}
+	}
+	return ps
+}
+
+func Points(x, y []float64) []Point {
+	n := len(x)
+	if n < len(y) {
+		n = len(y)
+	}
+
+	points := make([]Point, 0, n)
+	for i := 0; i < n; i++ {
+		var p Point
+		if i < len(x) {
+			p.X = x[i]
+		} else {
+			p.X = float64(i)
+		}
+
+		if i < len(y) {
+			p.Y = y[i]
+		} else {
+			p.Y = float64(i)
+		}
+
+		points = append(points, p)
+	}
+
+	return points
 }

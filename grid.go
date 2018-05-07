@@ -13,9 +13,11 @@ func NewGrid() *Grid {
 func (grid *Grid) Draw(plot *Plot, canvas Canvas) {
 	x, y := plot.X, plot.Y
 
-	sz := canvas.Bounds().Size()
-	xmin, xmax := x.ToCanvas(x.Min, 0, sz.X), x.ToCanvas(x.Max, 0, sz.X)
-	ymin, ymax := y.ToCanvas(y.Min, 0, sz.Y), y.ToCanvas(y.Max, 0, sz.Y)
+	size := canvas.Bounds().Size()
+	// xmin, xmax := x.ToCanvas(x.Min, 0, size.X), x.ToCanvas(x.Max, 0, size.X)
+	// ymin, ymax := y.ToCanvas(y.Min, 0, size.Y), y.ToCanvas(y.Max, 0, size.Y)
+	xmin, xmax := 0.0, size.X
+	ymin, ymax := 0.0, size.Y
 
 	theme := &grid.GridTheme
 	if theme.IsZero() {
@@ -39,7 +41,7 @@ func (grid *Grid) Draw(plot *Plot, canvas Canvas) {
 	}
 
 	for _, tick := range x.Ticks.Ticks(x) {
-		p := x.ToCanvas(tick.Value, 0, sz.X)
+		p := x.ToCanvas(tick.Value, 0, size.X)
 		if tick.Minor {
 			canvas.Poly(Ps(p, ymin, p, ymax), minor)
 		} else {
@@ -48,7 +50,7 @@ func (grid *Grid) Draw(plot *Plot, canvas Canvas) {
 	}
 
 	for _, tick := range y.Ticks.Ticks(y) {
-		p := y.ToCanvas(tick.Value, 0, sz.Y)
+		p := y.ToCanvas(tick.Value, 0, size.Y)
 		if tick.Minor {
 			canvas.Poly(Ps(xmin, p, xmax, p), minor)
 		} else {

@@ -50,3 +50,24 @@ func maximalStats(els []Element) Stats {
 	}
 	return finalstats
 }
+
+func PointsStats(points []Point) Stats {
+	min, avg, max := nanPoint, Point{}, nanPoint
+
+	if len(points) > 0 {
+		min = points[0]
+		max = points[0]
+	}
+
+	for _, p := range points {
+		min = min.Min(p)
+		avg = avg.Add(p)
+		max = max.Max(p)
+	}
+
+	return Stats{
+		Min:    min,
+		Center: avg.Scale(1 / float64(len(points))),
+		Max:    max,
+	}
+}
