@@ -43,3 +43,27 @@ func cubicPulse(center, radius, invradius, at float64) float64 {
 	at *= invradius
 	return 1 - at*at*(3-2*at)
 }
+
+func IntsToFloat64s(xs []int) []float64 {
+	r := make([]float64, len(xs))
+	for i := range xs {
+		r[i] = float64(xs[i])
+	}
+	return r
+}
+
+func Int32sToFloat64s(xs []int32) []float64 {
+	r := make([]float64, len(xs))
+	for i := range xs {
+		r[i] = float64(xs[i])
+	}
+	return r
+}
+
+func Int64sToFloat64s(xs []int64) []float64 {
+	r := make([]float64, len(xs))
+	for i := range xs {
+		r[i] = float64(xs[i])
+	}
+	return r
+}
