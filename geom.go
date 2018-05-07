@@ -32,6 +32,8 @@ func (r Rect) Size() Point              { return r.Max.Sub(r.Min) }
 func (r Rect) Offset(by Point) Rect     { return Rect{r.Min.Add(by), r.Max.Add(by)} }
 func (r Rect) Shrink(radius Point) Rect { return Rect{r.Min.Add(radius), r.Max.Sub(radius)} }
 
+func (r Rect) Inset(by Rect) Rect { return Rect{r.Min.Add(by.Min), r.Max.Sub(by.Max)} }
+
 func (r Rect) Points() []Point {
 	return []Point{
 		r.Min,

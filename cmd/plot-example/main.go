@@ -44,6 +44,7 @@ func main() {
 	{ // density plot
 		p := plot.New()
 		stack := plot.NewVStack()
+		stack.Margin = plot.R(0, 5, 0, 5)
 		p.Add(stack)
 		for _, dataset := range datasets {
 			red := plot.NewDensity("Red", dataset.Red)
@@ -77,6 +78,7 @@ func main() {
 	{ // violin plot
 		p := plot.New()
 		stack := plot.NewHStack()
+		stack.Margin = plot.R(5, 0, 5, 0)
 		p.Add(stack)
 		for _, dataset := range datasets {
 			red := plot.NewViolin("Red", dataset.Red)
@@ -125,6 +127,8 @@ func main() {
 			{Value: 0.99999, Label: "99.999"}}
 
 		stack := plot.NewVStack()
+		stack.Margin = plot.R(0, 5, 0, 5)
+
 		p.Add(stack)
 		for _, dataset := range datasets {
 			red := plot.NewPercentiles("Red", dataset.Red)
