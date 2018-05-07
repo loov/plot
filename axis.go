@@ -35,6 +35,17 @@ func NewAxis() *Axis {
 	}
 }
 
+func project(data []Point, x, y *Axis, bounds Rect) []Point {
+	points := make([]Point, 0, len(data))
+	size := bounds.Size()
+	for _, p := range data {
+		p.X = x.ToCanvas(p.X, 0, size.X)
+		p.Y = y.ToCanvas(p.Y, 0, size.Y)
+		points = append(points, p)
+	}
+	return points
+}
+
 func (axis *Axis) IsValid() bool {
 	return !math.IsNaN(axis.Min) && !math.IsNaN(axis.Max)
 }

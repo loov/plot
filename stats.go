@@ -3,17 +3,12 @@ package plot
 import "math"
 
 type Stats struct {
-	DiscreteX, DiscreteY bool
-
 	Min    Point
 	Center Point
 	Max    Point
 }
 
 var nanStats = Stats{
-	DiscreteX: false,
-	DiscreteY: false,
-
 	Min:    nanPoint,
 	Center: nanPoint,
 	Max:    nanPoint,
@@ -27,16 +22,9 @@ func tryGetStats(element Element) (Stats, bool) {
 }
 
 func maximalStats(els []Element) Stats {
-	first := true
 	finalstats := nanStats
 	for _, element := range els {
 		if elstats, ok := tryGetStats(element); ok {
-			if first {
-				first = false
-				finalstats.DiscreteX = elstats.DiscreteX
-				finalstats.DiscreteY = elstats.DiscreteY
-			}
-
 			if math.IsNaN(finalstats.Min.X) {
 				finalstats.Min.X = elstats.Min.X
 			} else if !math.IsNaN(elstats.Min.X) {

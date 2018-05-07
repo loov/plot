@@ -24,9 +24,41 @@ func Ps(cs ...Length) []Point {
 	return ps
 }
 
+func Points(x, y []float64) []Point {
+	n := len(x)
+	if n < len(y) {
+		n = len(y)
+	}
+
+	points := make([]Point, 0, n)
+	for i := 0; i < n; i++ {
+		var p Point
+		if i < len(x) {
+			p.X = x[i]
+		} else {
+			p.X = float64(i)
+		}
+
+		if i < len(y) {
+			p.Y = y[i]
+		} else {
+			p.Y = float64(i)
+		}
+
+		points = append(points, p)
+	}
+
+	return points
+}
+
 func (a Point) Neg() Point        { return Point{-a.X, -a.Y} }
 func (a Point) Add(b Point) Point { return Point{a.X + b.X, a.Y + b.Y} }
 func (a Point) Sub(b Point) Point { return Point{a.X - b.X, a.Y - b.Y} }
+func (a Point) Min(b Point) Point { return Point{math.Min(a.X, b.X), math.Min(a.Y, b.Y)} }
+func (a Point) Max(b Point) Point { return Point{math.Max(a.X, b.X), math.Max(a.Y, b.Y)} }
+
+func (a Point) Scale(v float64) Point { return Point{a.X * v, a.Y * v} }
+
 func (a Point) XY() (x, y Length) { return a.X, a.Y }
 
 type Rect struct{ Min, Max Point }

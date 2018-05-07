@@ -7,7 +7,8 @@ import (
 
 type Density struct {
 	Style
-	Label      string
+	Label string
+
 	Kernel     Length
 	Normalized bool
 	Data       []float64 // sorted
@@ -35,9 +36,6 @@ func (line *Density) Stats() Stats {
 	}
 
 	return Stats{
-		DiscreteX: true,
-		DiscreteY: true,
-
 		Min:    Point{min, 0},
 		Center: Point{avg, 0.5},
 		Max:    Point{max, 1},

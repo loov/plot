@@ -7,8 +7,9 @@ import (
 
 type Violin struct {
 	Style
+	Label string
+
 	Side       float64
-	Label      string
 	Kernel     Length
 	Normalized bool
 	Data       []float64 // sorted
@@ -37,9 +38,6 @@ func (line *Violin) Stats() Stats {
 	}
 
 	return Stats{
-		DiscreteX: true,
-		DiscreteY: true,
-
 		Min:    Point{-1, min},
 		Center: Point{0, avg}, // todo, figure out how to get the 50% of density plot
 		Max:    Point{1, max},
