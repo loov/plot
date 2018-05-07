@@ -32,6 +32,11 @@ func niceNumber(span float64, round bool) float64 {
 	return nice * math.Pow(10, exp)
 }
 
+func lerpUnit(p, min, max float64) float64 {
+	pu := (p + 1) * 0.5
+	return pu*(max-min) + min
+}
+
 func cubicPulse(center, radius, invradius, at float64) float64 {
 	at = at - center
 	if at < 0 {

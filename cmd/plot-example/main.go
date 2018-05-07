@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/rand"
+	"strconv"
 
 	"github.com/loov/plot"
 )
@@ -46,7 +47,7 @@ func main() {
 		stack := plot.NewVStack()
 		stack.Margin = plot.R(0, 5, 0, 5)
 		p.Add(stack)
-		for _, dataset := range datasets {
+		for i, dataset := range datasets {
 			red := plot.NewDensity("Red", dataset.Red)
 			red.Class = "red"
 			red.Stroke = color.NRGBA{200, 0, 0, 255}
@@ -67,6 +68,7 @@ func main() {
 				plot.NewGizmo(),
 				red, green, blue,
 				plot.NewTickLabels(),
+				plot.NewXLabel("Case "+strconv.Itoa(i+1)),
 			)
 		}
 
@@ -80,7 +82,7 @@ func main() {
 		stack := plot.NewHStack()
 		stack.Margin = plot.R(5, 0, 5, 0)
 		p.Add(stack)
-		for _, dataset := range datasets {
+		for i, dataset := range datasets {
 			red := plot.NewViolin("Red", dataset.Red)
 			red.Side = 0
 			red.Class = "red"
@@ -104,6 +106,7 @@ func main() {
 				plot.NewGizmo(),
 				red, green, blue,
 				plot.NewTickLabels(),
+				plot.NewXLabel("Case "+strconv.Itoa(i+1)),
 			)
 		}
 
@@ -130,7 +133,7 @@ func main() {
 		stack.Margin = plot.R(0, 5, 0, 5)
 
 		p.Add(stack)
-		for _, dataset := range datasets {
+		for i, dataset := range datasets {
 			red := plot.NewPercentiles("Red", dataset.Red)
 			red.Class = "red"
 			red.Stroke = color.NRGBA{200, 0, 0, 255}
@@ -148,6 +151,7 @@ func main() {
 				plot.NewGizmo(),
 				red, green, blue,
 				plot.NewTickLabels(),
+				plot.NewXLabel("Case "+strconv.Itoa(i+1)),
 			)
 		}
 
@@ -171,7 +175,7 @@ func main() {
 			{Value: 8196, Label: "8196"},
 		}
 
-		for range datasets {
+		for i, _ := range datasets {
 			values := make([]int, len(sizes))
 			prev := 0
 			for i := range values {
@@ -187,6 +191,7 @@ func main() {
 				plot.NewGizmo(),
 				nanos,
 				plot.NewTickLabels(),
+				plot.NewXLabel("Case "+strconv.Itoa(i+1)),
 			)
 		}
 
