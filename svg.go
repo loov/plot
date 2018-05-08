@@ -9,7 +9,10 @@ import (
 	"sort"
 )
 
-type SVG struct{ svgContext }
+type SVG struct {
+	Style string
+	svgContext
+}
 
 type svgContext struct {
 	index int
@@ -34,6 +37,7 @@ type svgElement struct {
 
 func NewSVG(width, height Length) *SVG {
 	svg := &SVG{}
+	svg.Style = `text { text-shadow: -1px -1px 0 rgba(255,255,255,0.5),	1px -1px 0 rgba(255,255,255,0.5), 1px  1px 0 rgba(255,255,255,0.5), -1px  1px 0 rgba(255,255,255,0.5); }`
 	svg.bounds.Max.X = width
 	svg.bounds.Max.Y = height
 	return svg
@@ -115,6 +119,11 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 	size := svg.bounds.Size()
 	w.Print(`<svg xmlns='http://www.w3.org/2000/svg' xmlns:loov='http://www.loov.io' width='%vpx' height='%vpx'>`, size.X, size.Y)
 	defer w.Print(`</svg>`)
+
+	if svg.Style != "" {
+		// TODO: escape CDATA
+		w.Print(`<style>/* <![CDATA[ */ %v /* ]]> */ </style>`, svg.Style)
+	}
 
 	w.Print(`<g transform='translate(0.5, 0.5)'>`)
 	defer w.Print(`</g>`)
