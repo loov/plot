@@ -39,6 +39,7 @@ type Theme struct {
 	Font      Style
 	FontSmall Style
 	Fill      Style
+	Bar       Style
 
 	Grid GridTheme
 }
@@ -76,6 +77,11 @@ func NewTheme() Theme {
 		Fill: Style{
 			Stroke: nil,
 			Fill:   color.NRGBA{255, 255, 255, 255},
+			Size:   1.0,
+		},
+		Bar: Style{
+			Stroke: color.NRGBA{0, 0, 0, 255},
+			Fill:   color.NRGBA{0, 0, 0, 100},
 			Size:   1.0,
 		},
 		Grid: GridTheme{

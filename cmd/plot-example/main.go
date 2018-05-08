@@ -160,7 +160,7 @@ func main() {
 		ioutil.WriteFile("percentiles.svg", svg.Bytes(), 0755)
 	}
 
-	{ // violin plot
+	{ // line plot
 		p := plot.New()
 		stack := plot.NewHStack()
 		stack.Margin = plot.R(5, 0, 5, 0)
@@ -198,5 +198,57 @@ func main() {
 		svg := plot.NewSVG(800, float64(150*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("line-stack.svg", svg.Bytes(), 0755)
+	}
+
+	{ // bar plot
+		p := plot.New()
+		stack := plot.NewHStack()
+		stack.Margin = plot.R(5, 0, 5, 0)
+		p.Add(stack)
+
+		sizes := []int{1, 2, 4, 8, 1024, 8196}
+		p.X.Ticks = plot.ManualTicks{
+			{Value: 1, Label: "1"},
+			{Value: 4, Label: "4"},
+			{Value: 1024, Label: "1024"},
+			{Value: 8196, Label: "8196"},
+		}
+
+		bars := []*plot.Bar{}
+
+		for i, _ := range datasets {
+			values := make([]int, len(sizes))
+			prev := 0
+			for i := range values {
+				values[i] = prev + i*rand.Intn(10) + 100
+				prev = values[i]
+			}
+
+			sizesf := plot.IntsToFloat64s(sizes)
+			valuesf := plot.IntsToFloat64s(values)
+			nanos := plot.NewBar("", plot.Points(sizesf, valuesf))
+			bars = append(bars, nanos)
+
+			stack.AddGroup(
+				plot.NewGrid(),
+				plot.NewGizmo(),
+				nanos,
+				plot.NewTickLabels(),
+				plot.NewXLabel("Case "+strconv.Itoa(i+1)),
+			)
+		}
+
+		svg := plot.NewSVG(800, float64(150*len(datasets)))
+		p.Draw(svg)
+		ioutil.WriteFile("bar-chart.svg", svg.Bytes(), 0755)
+
+		for _, bar := range bars {
+			bar.DynamicWidth = true
+		}
+		//p.X.Transform = plot.NewLog1pTransform(2)
+
+		svg = plot.NewSVG(800, float64(150*len(datasets)))
+		p.Draw(svg)
+		ioutil.WriteFile("bar-chart-dynamic.svg", svg.Bytes(), 0755)
 	}
 }
