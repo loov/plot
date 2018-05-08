@@ -70,7 +70,6 @@ func (tx *Log1pTransform) ilog(v float64) float64 {
 	} else {
 		return -math.Pow(tx.base, -v) + 1
 	}
-	return v
 }
 
 func (tx *Log1pTransform) transform(v float64) float64 {
