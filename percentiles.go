@@ -77,7 +77,13 @@ func (tx *PercentileTransform) ToCanvas(axis *Axis, v float64, screenMin, screen
 	v = tx.transform(v)
 	low, high := axis.lowhigh()
 	n := (v - low) / (high - low)
-	return screenMin + n*(screenMax-screenMin)
+	r := screenMin + n*(screenMax-screenMin)
+
+	// when v == 0, we do not want to return an infinity
+	if r > screenMax {
+		return screenMax
+	}
+	return r
 }
 
 func (tx *PercentileTransform) FromCanvas(axis *Axis, s Length, screenMin, screenMax Length) float64 {

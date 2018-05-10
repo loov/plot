@@ -44,3 +44,39 @@ func (plot *Plot) Draw(canvas Canvas) {
 		element.Draw(plot, canvas.Context(canvas.Bounds()))
 	}
 }
+
+type AxisGroup struct {
+	X, Y *Axis
+	Elements
+}
+
+func NewAxisGroup() *AxisGroup {
+	x, y := NewAxis(), NewAxis()
+	y.Flip = true
+	return &AxisGroup{
+		X: x,
+		Y: y,
+	}
+}
+
+func (group *AxisGroup) Update() {
+	tx, ty := detectAxis(group.X, group.Y, group.Elements)
+	*group.X = *tx
+	*group.Y = *ty
+}
+
+func (group *AxisGroup) Draw(plot *Plot, canvas Canvas) {
+	tmpplot := &Plot{}
+	*tmpplot = *plot
+
+	if group.X != nil {
+		tmpplot.X = group.X
+	}
+	if group.Y != nil {
+		tmpplot.Y = group.Y
+	}
+
+	for _, element := range group.Elements {
+		element.Draw(tmpplot, canvas.Context(canvas.Bounds()))
+	}
+}
