@@ -1,6 +1,8 @@
 package plot
 
-import "math"
+import (
+	"math"
+)
 
 func niceNumber(span float64, round bool) float64 {
 	exp := math.Floor(math.Log10(span))
