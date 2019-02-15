@@ -172,3 +172,19 @@ func (ticklabels *TickLabels) Draw(plot *Plot, canvas Canvas) {
 		}
 	}
 }
+
+func NewPercentilesAxis() *Axis {
+	axis := NewAxis()
+	axis.Transform = NewPercentileTransform(5)
+	axis.Ticks = ManualTicks{
+		{Value: 0, Label: "0"},
+		{Value: 0.25, Label: "25"},
+		{Value: 0.5, Label: "50"},
+		{Value: 0.75, Label: "75"},
+		{Value: 0.9, Label: "90"},
+		{Value: 0.99, Label: "99"},
+		{Value: 0.999, Label: "99.9"},
+		{Value: 0.9999, Label: "99.99"},
+		{Value: 0.99999, Label: "99.999"}}
+	return axis
+}

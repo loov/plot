@@ -117,17 +117,7 @@ func main() {
 
 	{ // percentile plot
 		p := plot.New()
-		p.X.Transform = plot.NewPercentileTransform(5)
-		p.X.Ticks = plot.ManualTicks{
-			{Value: 0, Label: "0"},
-			{Value: 0.25, Label: "25"},
-			{Value: 0.5, Label: "50"},
-			{Value: 0.75, Label: "75"},
-			{Value: 0.9, Label: "90"},
-			{Value: 0.99, Label: "99"},
-			{Value: 0.999, Label: "99.9"},
-			{Value: 0.9999, Label: "99.99"},
-			{Value: 0.99999, Label: "99.999"}}
+		p.X = plot.NewPercentilesAxis()
 
 		stack := plot.NewVStack()
 		stack.Margin = plot.R(0, 5, 0, 5)
