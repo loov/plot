@@ -2,8 +2,8 @@ package plot
 
 type Plot struct {
 	// X, Y are the axis information
-	X, Y *Axis
-	// Elements
+	X, Y   *Axis
+	Margin Rect
 	Elements
 	// DefaultStyle
 	Theme
@@ -40,8 +40,13 @@ func (plot *Plot) Draw(canvas Canvas) {
 		plot.X, plot.Y = detectAxis(plot.X, plot.Y, plot.Elements)
 	}
 
+	bounds := canvas.Bounds()
+	if !plot.Margin.Empty() {
+		bounds = bounds.Inset(plot.Margin)
+	}
+
 	for _, element := range plot.Elements {
-		element.Draw(plot, canvas.Context(canvas.Bounds()))
+		element.Draw(plot, canvas.Context(bounds))
 	}
 }
 
