@@ -76,6 +76,10 @@ func (group *AxisGroup) Draw(plot *Plot, canvas Canvas) {
 		tmpplot.Y = group.Y
 	}
 
+	if !tmpplot.X.IsValid() || !tmpplot.Y.IsValid() {
+		tmpplot.X, tmpplot.Y = detectAxis(tmpplot.X, tmpplot.Y, group.Elements)
+	}
+
 	for _, element := range group.Elements {
 		element.Draw(tmpplot, canvas.Context(canvas.Bounds()))
 	}
