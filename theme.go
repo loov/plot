@@ -2,6 +2,7 @@ package plot
 
 import "image/color"
 
+// Style represents a drawing style for an element.
 type Style struct {
 	Stroke color.Color
 	Fill   color.Color
@@ -20,12 +21,14 @@ type Style struct {
 	Class string
 }
 
+// mustExists checks whether style is valid and panics if it is not.
 func (style *Style) mustExist() {
 	if style == nil {
 		panic("style missing")
 	}
 }
 
+// IsZero checks whether style has been assigned.
 func (style *Style) IsZero() bool {
 	if style == nil {
 		return true
@@ -34,6 +37,7 @@ func (style *Style) IsZero() bool {
 	return style.Stroke == nil && style.Fill == nil && style.Size == 0
 }
 
+// Theme is a collection of different default styles.
 type Theme struct {
 	Line      Style
 	Font      Style
@@ -44,12 +48,14 @@ type Theme struct {
 	Grid GridTheme
 }
 
+// GridTheme is a default style for grid.
 type GridTheme struct {
 	Fill  color.Color
 	Major color.Color
 	Minor color.Color
 }
 
+// IsZero checks whether theme has been defined.
 func (theme *GridTheme) IsZero() bool {
 	if theme == nil {
 		return true
@@ -57,6 +63,7 @@ func (theme *GridTheme) IsZero() bool {
 	return theme.Fill == nil && theme.Major == nil && theme.Minor == nil
 }
 
+// NewTheme creates a theme with default values.
 func NewTheme() Theme {
 	return Theme{
 		Line: Style{

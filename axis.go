@@ -4,6 +4,7 @@ import (
 	"math"
 )
 
+// Axis defines an axis that defines how values are transformed to canvas space.
 type Axis struct {
 	// Min value of the axis (in value space)
 	Min float64
@@ -19,11 +20,13 @@ type Axis struct {
 	Transform AxisTransform
 }
 
+// AxisTransform transforms values between canvas and value-space.
 type AxisTransform interface {
 	ToCanvas(axis *Axis, v float64, screenMin, screenMax Length) Length
 	FromCanvas(axis *Axis, s Length, screenMin, screenMax Length) float64
 }
 
+// NewAxis creates a new axis.
 func NewAxis() *Axis {
 	return &Axis{
 		Min: math.NaN(),
@@ -35,6 +38,7 @@ func NewAxis() *Axis {
 	}
 }
 
+// project projects points to canvas space using the given axes.
 func project(data []Point, x, y *Axis, bounds Rect) []Point {
 	points := make([]Point, 0, len(data))
 	size := bounds.Size()
@@ -46,6 +50,7 @@ func project(data []Point, x, y *Axis, bounds Rect) []Point {
 	return points
 }
 
+// projectcb projects points to canvas space with callbacks.
 func projectcb(data []Point, x, y *Axis, bounds Rect, fn func(p Point)) {
 	size := bounds.Size()
 	for _, p := range data {
@@ -55,6 +60,7 @@ func projectcb(data []Point, x, y *Axis, bounds Rect, fn func(p Point)) {
 	}
 }
 
+// IsValid returns whether axis has been defined.
 func (axis *Axis) IsValid() bool {
 	return !math.IsNaN(axis.Min) && !math.IsNaN(axis.Max)
 }
@@ -68,7 +74,8 @@ func (axis *Axis) fixNaN() {
 	}
 }
 
-func (axis *Axis) lowhigh() (float64, float64) {
+// lowhigh returns axis bounds ordered.
+func (axis *Axis) lowhigh() (smallest, largest float64) {
 	if !axis.Flip {
 		return axis.Min, axis.Max
 	} else {
@@ -76,6 +83,7 @@ func (axis *Axis) lowhigh() (float64, float64) {
 	}
 }
 
+// ToCanvas converts value to canvas space.
 func (axis *Axis) ToCanvas(v float64, screenMin, screenMax Length) Length {
 	if axis.Transform != nil {
 		return axis.Transform.ToCanvas(axis, v, screenMin, screenMax)
@@ -86,6 +94,7 @@ func (axis *Axis) ToCanvas(v float64, screenMin, screenMax Length) Length {
 	return screenMin + n*(screenMax-screenMin)
 }
 
+// FromCanvas converts canvas point to value point.
 func (axis *Axis) FromCanvas(s Length, screenMin, screenMax Length) float64 {
 	if axis.Transform != nil {
 		return axis.Transform.FromCanvas(axis, s, screenMin, screenMax)
@@ -96,6 +105,7 @@ func (axis *Axis) FromCanvas(s Length, screenMin, screenMax Length) float64 {
 	return low + n*(high-low)
 }
 
+// Include ensures that min and max can be displayed on the axis.
 func (axis *Axis) Include(min, max float64) {
 	if math.IsNaN(axis.Min) {
 		axis.Min = min
@@ -110,6 +120,7 @@ func (axis *Axis) Include(min, max float64) {
 	}
 }
 
+// detectAxis automatically figures out axes using element stats.
 func detectAxis(x, y *Axis, elements []Element) (X, Y *Axis) {
 	tx, ty := NewAxis(), NewAxis()
 	*tx, *ty = *x, *y
@@ -142,6 +153,7 @@ func detectAxis(x, y *Axis, elements []Element) (X, Y *Axis) {
 	return tx, ty
 }
 
+// niceAxis calculates nice range for a given min, max or values.
 func niceAxis(min, max float64, major, minor int) (nicemin, nicemax float64) {
 	span := niceNumber(max-min, false)
 	tickSpacing := niceNumber(span/(float64(major*minor)-1), true)
@@ -150,11 +162,13 @@ func niceAxis(min, max float64, major, minor int) (nicemin, nicemax float64) {
 	return nicemin, nicemax
 }
 
+// ScreenSpaceTransform transforms using a custom func.
 type ScreenSpaceTransform struct {
 	Transform func(v float64) float64
 	Inverse   func(v float64) float64
 }
 
+// ToCanvas converts value to canvas space.
 func (tx *ScreenSpaceTransform) ToCanvas(axis *Axis, v float64, screenMin, screenMax Length) Length {
 	low, high := axis.lowhigh()
 	n := (v - low) / (high - low)
@@ -164,6 +178,7 @@ func (tx *ScreenSpaceTransform) ToCanvas(axis *Axis, v float64, screenMin, scree
 	return screenMin + n*(screenMax-screenMin)
 }
 
+// FromCanvas converts canvas point to value point.
 func (tx *ScreenSpaceTransform) FromCanvas(axis *Axis, s Length, screenMin, screenMax Length) float64 {
 	low, high := axis.lowhigh()
 	n := (s - screenMin) / (screenMax - screenMin)

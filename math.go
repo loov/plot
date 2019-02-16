@@ -4,6 +4,7 @@ import (
 	"math"
 )
 
+// niceNumber calculates nicely rounded number.
 func niceNumber(span float64, round bool) float64 {
 	exp := math.Floor(math.Log10(span))
 	frac := span / math.Pow(10, exp)
@@ -34,11 +35,13 @@ func niceNumber(span float64, round bool) float64 {
 	return nice * math.Pow(10, exp)
 }
 
+// lerpUnit implements interpolates between min and max.
 func lerpUnit(p, min, max float64) float64 {
 	pu := (p + 1) * 0.5
 	return pu*(max-min) + min
 }
 
+// cubicPulse calculates cubic-pulse function at a given location.
 func cubicPulse(center, radius, invradius, at float64) float64 {
 	at = at - center
 	if at < 0 {
@@ -51,6 +54,7 @@ func cubicPulse(center, radius, invradius, at float64) float64 {
 	return 1 - at*at*(3-2*at)
 }
 
+// IntssToFloat64s convers a slice of ints to float64-s.
 func IntsToFloat64s(xs []int) []float64 {
 	r := make([]float64, len(xs))
 	for i := range xs {
@@ -59,6 +63,7 @@ func IntsToFloat64s(xs []int) []float64 {
 	return r
 }
 
+// Int32sToFloat64s convers a slice of int32-s to float64-s.
 func Int32sToFloat64s(xs []int32) []float64 {
 	r := make([]float64, len(xs))
 	for i := range xs {
@@ -67,6 +72,7 @@ func Int32sToFloat64s(xs []int32) []float64 {
 	return r
 }
 
+// Int64sToFloat64s convers a slice of int64-s to float64-s.
 func Int64sToFloat64s(xs []int64) []float64 {
 	r := make([]float64, len(xs))
 	for i := range xs {

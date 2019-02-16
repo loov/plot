@@ -9,11 +9,13 @@ import (
 	"sort"
 )
 
+// SVG describes the top-level svg drawing context.
 type SVG struct {
 	Style string
 	svgContext
 }
 
+// svgContext describes a svg drawing context.
 type svgContext struct {
 	index int
 	clip  bool
@@ -23,6 +25,7 @@ type svgContext struct {
 	layers   []*svgContext
 }
 
+// svgElement describes an svg element.
 type svgElement struct {
 	// style
 	style Style
@@ -35,6 +38,7 @@ type svgElement struct {
 	context *svgContext
 }
 
+// NewSVG creates a new svg canvas.
 func NewSVG(width, height Length) *SVG {
 	svg := &SVG{}
 	svg.Style = `text { text-shadow: -1px -1px 0 rgba(255,255,255,0.5),	1px -1px 0 rgba(255,255,255,0.5), 1px  1px 0 rgba(255,255,255,0.5), -1px  1px 0 rgba(255,255,255,0.5); }`
@@ -43,15 +47,24 @@ func NewSVG(width, height Length) *SVG {
 	return svg
 }
 
+// Bytes returns svg context as a byte array.
 func (svg *SVG) Bytes() []byte {
 	var buffer bytes.Buffer
 	svg.WriteTo(&buffer)
 	return buffer.Bytes()
 }
 
-func (svg *svgContext) Bounds() Rect { return svg.bounds.Zero() }
-func (svg *svgContext) Size() Point  { return svg.bounds.Size() }
+// Bounds returns the bounds in the global size.
+func (svg *svgContext) Bounds() Rect {
+	return svg.bounds.Zero()
+}
 
+// Size returns the size of the context.
+func (svg *svgContext) Size() Point {
+	return svg.bounds.Size()
+}
+
+// context creates a clipped subcontext.
 func (svg *svgContext) context(r Rect, clip bool) Canvas {
 	element := svgElement{}
 	element.context = &svgContext{}
@@ -61,9 +74,17 @@ func (svg *svgContext) context(r Rect, clip bool) Canvas {
 	return element.context
 }
 
-func (svg *svgContext) Context(r Rect) Canvas { return svg.context(r, false) }
-func (svg *svgContext) Clip(r Rect) Canvas    { return svg.context(r, true) }
+// Context creates a subcontext bounded to r.
+func (svg *svgContext) Context(r Rect) Canvas {
+	return svg.context(r, false)
+}
 
+// Clip clips to rect.
+func (svg *svgContext) Clip(r Rect) Canvas {
+	return svg.context(r, true)
+}
+
+// Layer returns an layer above or below current state.
 func (svg *svgContext) Layer(index int) Canvas {
 	if index == 0 {
 		return svg
@@ -86,6 +107,7 @@ func (svg *svgContext) Layer(index int) Canvas {
 	}
 }
 
+// Text draws text.
 func (svg *svgContext) Text(text string, at Point, style *Style) {
 	style.mustExist()
 	svg.elements = append(svg.elements, svgElement{
@@ -95,6 +117,7 @@ func (svg *svgContext) Text(text string, at Point, style *Style) {
 	})
 }
 
+// Poly draws a polygon.
 func (svg *svgContext) Poly(points []Point, style *Style) {
 	style.mustExist()
 	svg.elements = append(svg.elements, svgElement{
@@ -103,10 +126,12 @@ func (svg *svgContext) Poly(points []Point, style *Style) {
 	})
 }
 
+// Rect draws a rectangle.
 func (svg *svgContext) Rect(r Rect, style *Style) {
 	svg.Poly(r.Points(), style)
 }
 
+// WriteTo writes svg content to dst.
 func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 	w := &writer{}
 	w.Writer = dst
@@ -203,6 +228,7 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 	return w.total, w.err
 }
 
+// writeTextStyle writes text styling.
 func (w *writer) writeTextStyle(style *Style) {
 	// TODO: merge with writePolyStyle
 	if style.Class != "" {
@@ -235,6 +261,7 @@ func (w *writer) writeTextStyle(style *Style) {
 	}
 }
 
+// writePolyStyle writes a polygon class and styling.
 func (w *writer) writePolyStyle(style *Style) {
 	if style.Class != "" {
 		w.Printf(` class='`)
@@ -276,6 +303,7 @@ func (w *writer) writePolyStyle(style *Style) {
 	// TODO: dash
 }
 
+// convertColorToHex converts color to an hex encoded string.
 func convertColorToHex(color color.Color) string {
 	r, g, b, a := color.RGBA()
 	if a > 0 {
@@ -299,14 +327,17 @@ func convertColorToHex(color color.Color) string {
 	return fmt.Sprintf("#%08x", hex)
 }
 
+// writer implements error capturing/hiding writer.
 type writer struct {
 	io.Writer
 	total int64
 	err   error
 }
 
+// Errored returns whether there has been an error during writing.
 func (w *writer) Errored() bool { return w.err != nil }
 
+// Write is a convenience func for writing svg content.
 func (w *writer) Write(data []byte) (int, error) {
 	if w.Errored() {
 		return 0, nil
@@ -319,5 +350,8 @@ func (w *writer) Write(data []byte) (int, error) {
 	return n, nil
 }
 
-func (w *writer) Print(format string, args ...interface{})  { fmt.Fprintf(w, format+"\n", args...) }
+// Print is a convenience function for writing svg content.
+func (w *writer) Print(format string, args ...interface{}) { fmt.Fprintf(w, format+"\n", args...) }
+
+// Printf is a convenience function for writing svg content.
 func (w *writer) Printf(format string, args ...interface{}) { fmt.Fprintf(w, format, args...) }

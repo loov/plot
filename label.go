@@ -1,11 +1,13 @@
 package plot
 
+// Label describes a plot element that draws a text to relative position.
 type Label struct {
 	Placement Point
 	Style
 	Text string
 }
 
+// NewXLabel creates a text label that is placed according to relative placement.
 func NewXLabel(text string) *Label {
 	return &Label{
 		Placement: Point{0, 1},
@@ -16,6 +18,7 @@ func NewXLabel(text string) *Label {
 	}
 }
 
+// Draw draws the element to canvas.
 func (label *Label) Draw(plot *Plot, canvas Canvas) {
 	style := &label.Style
 	if style == nil {

@@ -2,6 +2,7 @@ package plot
 
 import "math"
 
+// SetScreenLog1P sets axis to logarithm space.
 func (axis *Axis) SetScreenLog1P(compress float64) {
 	if compress == 0 {
 		axis.Transform = nil
@@ -29,6 +30,7 @@ func (axis *Axis) SetScreenLog1P(compress float64) {
 	}
 }
 
+// Log1pTransform implements logarithmic transform.
 type Log1pTransform struct {
 	invert  bool
 	base    float64
@@ -40,6 +42,7 @@ type Log1pTransform struct {
 	}
 }
 
+// NewLog1pTransform implements a logarithmic axis transform.
 func NewLog1pTransform(base float64) *Log1pTransform {
 	invert := base < 0
 	if invert {
@@ -52,6 +55,7 @@ func NewLog1pTransform(base float64) *Log1pTransform {
 	}
 }
 
+// ilog implements mirrored log.
 func (tx *Log1pTransform) log(v float64) float64 {
 	if v == 0 {
 		return 0
@@ -72,6 +76,7 @@ func (tx *Log1pTransform) ilog(v float64) float64 {
 	}
 }
 
+// logspace converts log-space to normalized space.
 func (tx *Log1pTransform) transform(v float64) float64 {
 	if tx.invert {
 		return tx.ilog(v)
@@ -79,6 +84,7 @@ func (tx *Log1pTransform) transform(v float64) float64 {
 	return tx.log(v)
 }
 
+// inverse converts normalized value to log-space.
 func (tx *Log1pTransform) inverse(v float64) float64 {
 	if tx.invert {
 		return tx.log(v)
@@ -86,6 +92,7 @@ func (tx *Log1pTransform) inverse(v float64) float64 {
 	return tx.ilog(v)
 }
 
+// lowhigh calculates low and high limits of the axis.
 func (tx *Log1pTransform) lowhigh(axis *Axis) (float64, float64) {
 	low, high := axis.lowhigh()
 	if tx.cache.low == low && tx.cache.high == high {
@@ -96,6 +103,7 @@ func (tx *Log1pTransform) lowhigh(axis *Axis) (float64, float64) {
 	return tx.cache.loglow, tx.cache.loghigh
 }
 
+// ToCanvas converts value to canvas space.
 func (tx *Log1pTransform) ToCanvas(axis *Axis, v float64, screenMin, screenMax Length) Length {
 	v = tx.transform(v)
 	low, high := tx.lowhigh(axis)
@@ -103,6 +111,7 @@ func (tx *Log1pTransform) ToCanvas(axis *Axis, v float64, screenMin, screenMax L
 	return screenMin + n*(screenMax-screenMin)
 }
 
+// FromCanvas converts canvas point to value point.
 func (tx *Log1pTransform) FromCanvas(axis *Axis, s Length, screenMin, screenMax Length) float64 {
 	low, high := tx.lowhigh(axis)
 	n := (s - screenMin) / (screenMax - screenMin)

@@ -1,21 +1,25 @@
 package plot
 
+// Textbox implements drawing text on plots.
 type Textbox struct {
 	Margin Rect
 	Style
 	Lines []string
 }
 
+// NewTextbox creates a new text graphic with the specified lines.
 func NewTextbox(line ...string) *Textbox {
 	return &Textbox{
 		Lines: line,
 	}
 }
 
+// Add adds a line to the text box.
 func (box *Textbox) Add(text string) {
 	box.Lines = append(box.Lines, text)
 }
 
+// Draw draws text to the canvas.
 func (box *Textbox) Draw(plot *Plot, canvas Canvas) {
 	canvas = canvas.Clip(canvas.Bounds().Inset(box.Margin))
 	style := box.Style

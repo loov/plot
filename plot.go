@@ -1,5 +1,6 @@
 package plot
 
+// Plot defines a combination of elements that can be drawn to the canvas.
 type Plot struct {
 	// X, Y are the axis information
 	X, Y   *Axis
@@ -9,7 +10,7 @@ type Plot struct {
 	Theme
 }
 
-// Element is a drawable plot element
+// Element is a drawable plot element.
 type Element interface {
 	Draw(plot *Plot, canvas Canvas)
 }
@@ -21,6 +22,7 @@ type Dataset interface {
 	Stats() Stats
 }
 
+// New creates a new empty plot.
 func New() *Plot {
 	x, y := NewAxis(), NewAxis()
 	y.Flip = true
@@ -32,6 +34,7 @@ func New() *Plot {
 	}
 }
 
+// Draw draws plot to the specified canvas, creating axes automatically when necessary.
 func (plot *Plot) Draw(canvas Canvas) {
 	if !plot.X.IsValid() || !plot.Y.IsValid() {
 		tmpplot := &Plot{}
@@ -50,11 +53,13 @@ func (plot *Plot) Draw(canvas Canvas) {
 	}
 }
 
+// AxisGroup allows sub-elements to have different different axes defined rather than the top-level plot.
 type AxisGroup struct {
 	X, Y *Axis
 	Elements
 }
 
+// NewAxisGroup creates a new axis group.
 func NewAxisGroup() *AxisGroup {
 	x, y := NewAxis(), NewAxis()
 	y.Flip = true
@@ -64,12 +69,14 @@ func NewAxisGroup() *AxisGroup {
 	}
 }
 
+// Update updates the axis values.
 func (group *AxisGroup) Update() {
 	tx, ty := detectAxis(group.X, group.Y, group.Elements)
 	*group.X = *tx
 	*group.Y = *ty
 }
 
+// Draw draws elements bound to this axis-group creating an axis automatically if necessary.
 func (group *AxisGroup) Draw(plot *Plot, canvas Canvas) {
 	tmpplot := &Plot{}
 	*tmpplot = *plot

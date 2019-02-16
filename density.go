@@ -5,6 +5,7 @@ import (
 	"sort"
 )
 
+// Density implements density plot using cubic-pulse kernel.
 type Density struct {
 	Style
 	Label string
@@ -14,6 +15,7 @@ type Density struct {
 	Data       []float64 // sorted
 }
 
+// NewDensity creates a density plot from the given values.
 func NewDensity(label string, values []float64) *Density {
 	data := append(values[:0:0], values...)
 	sort.Float64s(data)
@@ -25,6 +27,7 @@ func NewDensity(label string, values []float64) *Density {
 	}
 }
 
+// Stats calculates statistics of values.
 func (line *Density) Stats() Stats {
 	min, avg, max := math.NaN(), math.NaN(), math.NaN()
 
@@ -42,6 +45,7 @@ func (line *Density) Stats() Stats {
 	}
 }
 
+// Draw draws the element to canvas.
 func (line *Density) Draw(plot *Plot, canvas Canvas) {
 	x, y := plot.X, plot.Y
 

@@ -4,6 +4,7 @@ import (
 	"math"
 )
 
+// Bar implements a stacked-bar plot.
 type Bar struct {
 	Style
 	Label string
@@ -14,6 +15,7 @@ type Bar struct {
 	Data []Point
 }
 
+// NewBar creates a bar plot from the given points.
 func NewBar(label string, points []Point) *Bar {
 	return &Bar{
 		Label:           label,
@@ -22,6 +24,7 @@ func NewBar(label string, points []Point) *Bar {
 	}
 }
 
+// iter iterates the bar plot with the given sizes.
 func (bar *Bar) iter(fn func(p Point, left, right float64)) {
 	if !bar.DynamicWidth {
 		for i, p := range bar.Data {
@@ -51,6 +54,7 @@ func (bar *Bar) iter(fn func(p Point, left, right float64)) {
 	}
 }
 
+// Stats calculates stats from the values.
 func (bar *Bar) Stats() Stats {
 	stats := PointsStats(bar.Data)
 	stats.Min.X = 0
@@ -66,6 +70,7 @@ func (bar *Bar) Stats() Stats {
 	return stats
 }
 
+// Draw draws the element to canvas.
 func (bar *Bar) Draw(plot *Plot, canvas Canvas) {
 	x, y := plot.X, plot.Y
 	size := canvas.Bounds().Size()

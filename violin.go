@@ -5,6 +5,7 @@ import (
 	"sort"
 )
 
+// Violin implements violin plot using cubic-pulse for kernel function.
 type Violin struct {
 	Style
 	Label string
@@ -15,6 +16,7 @@ type Violin struct {
 	Data       []float64 // sorted
 }
 
+// NewViolin creates a new violin element using the specified values.
 func NewViolin(label string, values []float64) *Violin {
 	data := append(values[:0:0], values...)
 	sort.Float64s(data)
@@ -27,6 +29,7 @@ func NewViolin(label string, values []float64) *Violin {
 	}
 }
 
+// Stats calculates element statistics.
 func (line *Violin) Stats() Stats {
 	min, avg, max := math.NaN(), math.NaN(), math.NaN()
 
@@ -44,6 +47,7 @@ func (line *Violin) Stats() Stats {
 	}
 }
 
+// Draw draws the element to canvas.
 func (line *Violin) Draw(plot *Plot, canvas Canvas) {
 	x, y := plot.X, plot.Y
 

@@ -2,14 +2,17 @@ package plot
 
 import "image/color"
 
+// Grid implements faceted background.
 type Grid struct {
 	GridTheme
 }
 
+// NewGrid creates a new grid plot.
 func NewGrid() *Grid {
 	return &Grid{}
 }
 
+// Draw draws the element to canvas.
 func (grid *Grid) Draw(plot *Plot, canvas Canvas) {
 	x, y := plot.X, plot.Y
 
@@ -59,12 +62,17 @@ func (grid *Grid) Draw(plot *Plot, canvas Canvas) {
 	}
 }
 
+// Gizmo implements drawing X and Y axis.
 type Gizmo struct {
 	Center Point
 }
 
-func NewGizmo() *Gizmo { return &Gizmo{} }
+// NewGizmo creates a new gizmo element.
+func NewGizmo() *Gizmo {
+	return &Gizmo{}
+}
 
+// Draw draws the element to canvas.
 func (gizmo *Gizmo) Draw(plot *Plot, canvas Canvas) {
 	x, y := plot.X, plot.Y
 

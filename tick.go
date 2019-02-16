@@ -5,18 +5,22 @@ import (
 	"math"
 )
 
+// Ticks represents an approach to calculating tick position and label.
 type Ticks interface {
 	Ticks(axis *Axis) []Tick
 }
 
+// Tick represents a division on plot.
 type Tick struct {
 	Minor bool
 	Label string
 	Value float64
 }
 
+// AutomaticTicks tries to automatically figure out which ticks to use.
 type AutomaticTicks struct{}
 
+// logarithmicTicks calculates ticks for logarithmic axis.
 func (at AutomaticTicks) logarithmicTicks(axis *Axis, transform *Log1pTransform) []Tick {
 	//TODO: fix, we don't properly assign labels for logarithmic axis
 
@@ -72,6 +76,7 @@ func (at AutomaticTicks) logarithmicTicks(axis *Axis, transform *Log1pTransform)
 	return ticks
 }
 
+// linearTicks calculates ticks on linear axis.
 func (AutomaticTicks) linearTicks(axis *Axis) []Tick {
 	majorSpacing := (axis.Max - axis.Min) / float64(axis.MajorTicks)
 	minorSpacing := majorSpacing / float64(axis.MinorTicks)
@@ -120,6 +125,7 @@ func (AutomaticTicks) linearTicks(axis *Axis) []Tick {
 	return ticks
 }
 
+// Ticks automatically calculates appropriate ticks for an axis.
 func (ticks AutomaticTicks) Ticks(axis *Axis) []Tick {
 	// if transform, ok := axis.Transform.(*Log1pTransform); ok {
 	// 	return ticks.logarithmicTicks(axis, transform)
@@ -127,21 +133,26 @@ func (ticks AutomaticTicks) Ticks(axis *Axis) []Tick {
 	return ticks.linearTicks(axis)
 }
 
+// ManualTicks allows to manually place and label ticks.
 type ManualTicks []Tick
 
+// Ticks calculates ticks for specified axis.
 func (ticks ManualTicks) Ticks(axis *Axis) []Tick { return []Tick(ticks) }
 
+// TickLabels implements drawing tick labels.
 type TickLabels struct {
 	X, Y  bool
 	Style Style
 }
 
+// NewTickLabels creates a new tick labelling element.
 func NewTickLabels() *TickLabels {
 	labels := &TickLabels{}
 	labels.X, labels.Y = true, true
 	return labels
 }
 
+// Draw draws tick labels to canvas using axes from plot.
 func (ticklabels *TickLabels) Draw(plot *Plot, canvas Canvas) {
 	x, y := plot.X, plot.Y
 
@@ -171,20 +182,4 @@ func (ticklabels *TickLabels) Draw(plot *Plot, canvas Canvas) {
 			}
 		}
 	}
-}
-
-func NewPercentilesAxis() *Axis {
-	axis := NewAxis()
-	axis.Transform = NewPercentileTransform(5)
-	axis.Ticks = ManualTicks{
-		{Value: 0, Label: "0"},
-		{Value: 0.25, Label: "25"},
-		{Value: 0.5, Label: "50"},
-		{Value: 0.75, Label: "75"},
-		{Value: 0.9, Label: "90"},
-		{Value: 0.99, Label: "99"},
-		{Value: 0.999, Label: "99.9"},
-		{Value: 0.9999, Label: "99.99"},
-		{Value: 0.99999, Label: "99.999"}}
-	return axis
 }

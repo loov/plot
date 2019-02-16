@@ -2,18 +2,21 @@ package plot
 
 import "math"
 
+// Stats describes a data points.
 type Stats struct {
 	Min    Point
 	Center Point
 	Max    Point
 }
 
+// nanStats is used for missing stats.
 var nanStats = Stats{
 	Min:    nanPoint,
 	Center: nanPoint,
 	Max:    nanPoint,
 }
 
+// tryGetStats tries to calculate stats.
 func tryGetStats(element Element) (Stats, bool) {
 	if dataset, ok := element.(Dataset); ok {
 		return dataset.Stats(), true
@@ -21,6 +24,7 @@ func tryGetStats(element Element) (Stats, bool) {
 	return nanStats, false
 }
 
+// maximalStats finds bounding stats from elements.
 func maximalStats(els []Element) Stats {
 	finalstats := nanStats
 	for _, element := range els {
@@ -55,6 +59,7 @@ func maximalStats(els []Element) Stats {
 	return finalstats
 }
 
+// PointsStats calculates statistics of points.
 func PointsStats(points []Point) Stats {
 	min, avg, max := nanPoint, Point{}, nanPoint
 

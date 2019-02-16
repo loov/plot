@@ -1,5 +1,6 @@
 package plot
 
+// Canvas describes interface for drawing graphics.
 type Canvas interface {
 	Bounds() Rect
 	Layer(index int) Canvas
