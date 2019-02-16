@@ -69,7 +69,9 @@ type HStack struct {
 }
 
 // NewHStack creates a collection of elements that are horizontally stacked.
-func NewHStack(els ...Element) *HStack { return &HStack{Elements: Elements(els)} }
+func NewHStack(els ...Element) *HStack {
+	return &HStack{Elements: Elements(els)}
+}
 
 // Draw draws elements horizontally stacked equally dividing space.
 func (stack *HStack) Draw(plot *Plot, canvas Canvas) {

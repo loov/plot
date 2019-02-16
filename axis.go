@@ -74,13 +74,12 @@ func (axis *Axis) fixNaN() {
 	}
 }
 
-// lowhigh returns axis bounds ordered.
-func (axis *Axis) lowhigh() (smallest, largest float64) {
-	if !axis.Flip {
-		return axis.Min, axis.Max
-	} else {
+// lowhigh returns axis low and high values.
+func (axis *Axis) lowhigh() (low, high float64) {
+	if axis.Flip {
 		return axis.Max, axis.Min
 	}
+	return axis.Min, axis.Max
 }
 
 // ToCanvas converts value to canvas space.

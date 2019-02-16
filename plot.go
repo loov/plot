@@ -60,12 +60,12 @@ type AxisGroup struct {
 }
 
 // NewAxisGroup creates a new axis group.
-func NewAxisGroup() *AxisGroup {
+func NewAxisGroup(els ...Element) *AxisGroup {
 	x, y := NewAxis(), NewAxis()
 	y.Flip = true
 	return &AxisGroup{
-		X: x,
-		Y: y,
+		X: x, Y: y,
+		Elements: Elements(els),
 	}
 }
 
