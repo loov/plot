@@ -16,10 +16,11 @@ func NewPercentiles(label string, values []float64) *Percentiles {
 	sort.Float64s(values)
 
 	points := make([]Point, 0, len(values))
-	multipler := 1 / float64(len(values))
+
+	multiplier := 1 / float64(len(values)+1)
 	for i, v := range values {
 		var p Point
-		p.X = float64(i+1) * multipler
+		p.X = float64(i+1) * multiplier
 		p.Y = v
 		points = append(points, p)
 	}
