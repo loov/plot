@@ -35,7 +35,17 @@ func niceNumber(span float64, round bool) float64 {
 	return nice * math.Pow(10, exp)
 }
 
-// lerpUnit implements interpolates between min and max.
+// lerp interpolates between min and max using p=[0,1].
+func lerp(p, min, max float64) float64 {
+	return p*(max-min) + min
+}
+
+// invlerp return inverse lerp from min, max and the value.
+func invlerp(v, min, max float64) float64 {
+	return (v - min) / (max - min)
+}
+
+// lerpUnit interpolates between min and max using p=[-1,1].
 func lerpUnit(p, min, max float64) float64 {
 	pu := (p + 1) * 0.5
 	return pu*(max-min) + min

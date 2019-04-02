@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"math"
 
-	"github.com/kr/pretty"
 	"github.com/loov/plot"
 )
 
@@ -54,7 +53,7 @@ func main() {
 		Dash:   []plot.Length{1, 2, 3},
 	})
 
-	pretty.Print(canvas)
+	fmt.Println(canvas)
 
 	ioutil.WriteFile("example.svg", canvas.Bytes(), 0755)
 }
