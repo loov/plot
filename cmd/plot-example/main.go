@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	defaultMargin := plot.R(20, 20, 20, 20)
+
 	type Dataset struct {
 		Red   []float64
 		Green []float64
@@ -46,7 +48,7 @@ func main() {
 	{ // density plot
 		p := plot.New()
 		stack := plot.NewVStack()
-		stack.Margin = plot.R(0, 5, 0, 5)
+		stack.Margin = defaultMargin
 		p.Add(stack)
 		for i, dataset := range datasets {
 			red := plot.NewDensity("Red", dataset.Red)
@@ -73,7 +75,7 @@ func main() {
 			)
 		}
 
-		svg := plotsvg.New(800, float64(150*len(datasets)))
+		svg := plotsvg.New(800, float64(200*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("density.svg", svg.Bytes(), 0755)
 	}
@@ -81,7 +83,7 @@ func main() {
 	{ // violin plot
 		p := plot.New()
 		stack := plot.NewHStack()
-		stack.Margin = plot.R(5, 0, 5, 0)
+		stack.Margin = defaultMargin
 		p.Add(stack)
 		for i, dataset := range datasets {
 			red := plot.NewViolin("Red", dataset.Red)
@@ -111,7 +113,7 @@ func main() {
 			)
 		}
 
-		svg := plotsvg.New(800, float64(150*len(datasets)))
+		svg := plotsvg.New(800, float64(200*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("violin.svg", svg.Bytes(), 0755)
 	}
@@ -121,7 +123,7 @@ func main() {
 		p.X = plot.NewPercentilesAxis()
 
 		stack := plot.NewVStack()
-		stack.Margin = plot.R(0, 5, 0, 5)
+		stack.Margin = defaultMargin
 
 		p.Add(stack)
 		for i, dataset := range datasets {
@@ -146,7 +148,7 @@ func main() {
 			)
 		}
 
-		svg := plotsvg.New(800, float64(150*len(datasets)))
+		svg := plotsvg.New(800, float64(200*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("percentiles.svg", svg.Bytes(), 0755)
 	}
@@ -154,7 +156,7 @@ func main() {
 	{ // line plot
 		p := plot.New()
 		stack := plot.NewHStack()
-		stack.Margin = plot.R(20, 20, 20, 20)
+		stack.Margin = defaultMargin
 		p.Add(stack)
 
 		sizes := []int{1, 2, 4, 8, 1024, 8196}
@@ -192,7 +194,7 @@ func main() {
 			)
 		}
 
-		svg := plotsvg.New(800, float64(150*len(datasets)))
+		svg := plotsvg.New(800, float64(200*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("line-stack.svg", svg.Bytes(), 0755)
 	}
@@ -200,7 +202,7 @@ func main() {
 	{ // bar plot
 		p := plot.New()
 		stack := plot.NewHStack()
-		stack.Margin = plot.R(5, 0, 5, 0)
+		stack.Margin = defaultMargin
 		p.Add(stack)
 
 		sizes := []int{1, 2, 4, 8, 1024, 8196}
@@ -235,7 +237,7 @@ func main() {
 			)
 		}
 
-		svg := plotsvg.New(800, float64(150*len(datasets)))
+		svg := plotsvg.New(800, float64(200*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("bar-chart.svg", svg.Bytes(), 0755)
 
@@ -244,7 +246,7 @@ func main() {
 		}
 		//p.X.Transform = plot.NewLog1pTransform(2)
 
-		svg = plotsvg.New(800, float64(150*len(datasets)))
+		svg = plotsvg.New(800, float64(200*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("bar-chart-dynamic.svg", svg.Bytes(), 0755)
 	}

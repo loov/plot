@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"math"
 	"sort"
 
 	"github.com/loov/plot"
@@ -238,6 +239,26 @@ func (w *writer) writeTextStyle(style *plot.Style) {
 		w.Printf(` class='`)
 		xml.EscapeText(w, []byte(style.Class))
 		w.Printf(`'`)
+	}
+
+	if style.Rotation != 0 {
+		w.Printf(`transform="rotate(%.2f)" `, style.Rotation*180/math.Pi)
+	}
+
+	if style.Origin.X == 0 {
+		w.Printf(`text-anchor="middle" `)
+	} else if style.Origin.X == 1 {
+		w.Printf(`text-anchor="end" `)
+	} else if style.Origin.X == -1 {
+		w.Printf(`text-anchor="start" `)
+	}
+
+	if style.Origin.Y == 0 {
+		w.Printf(`alignment-baseline="middle" `)
+	} else if style.Origin.Y == 1 {
+		w.Printf(`alignment-baseline="baseline" `)
+	} else if style.Origin.Y == -1 {
+		w.Printf(`alignment-baseline="hanging" `)
 	}
 
 	if style.Font == "" && style.Size == 0 && style.Stroke == nil && style.Fill == nil {
