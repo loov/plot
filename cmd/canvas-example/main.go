@@ -7,6 +7,7 @@ import (
 	"math"
 
 	"github.com/loov/plot"
+	"github.com/loov/plot/plotsvg"
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 	interlace := &plot.Style{Stroke: color.NRGBA{230, 210, 210, 255}}
 	fill := &plot.Style{Fill: color.NRGBA{0, 0, 0, 10}}
 
-	canvas := plot.NewSVG(800, 600)
+	canvas := plotsvg.New(800, 600)
 
 	clip := canvas.Bounds().Shrink(plot.P(30, 30))
 	canvas.Rect(clip, fill)
@@ -52,8 +53,6 @@ func main() {
 		Stroke: color.NRGBA{0, 0, 0, 255},
 		Dash:   []plot.Length{1, 2, 3},
 	})
-
-	fmt.Println(canvas)
 
 	ioutil.WriteFile("example.svg", canvas.Bytes(), 0755)
 }

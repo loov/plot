@@ -1,4 +1,4 @@
-package plot
+package plotsvg
 
 import (
 	"bytes"
@@ -7,85 +7,89 @@ import (
 	"image/color"
 	"io"
 	"sort"
+
+	"github.com/loov/plot"
 )
 
-// SVG describes the top-level svg drawing context.
-type SVG struct {
+var _ plot.Canvas = (*Canvas)(nil)
+
+// Canvas describes the top-level svg drawing context.
+type Canvas struct {
 	Style string
-	svgContext
+	context
 }
 
-// svgContext describes a svg drawing context.
-type svgContext struct {
-	index int
-	clip  bool
-	// bounds relative to parent
-	bounds   Rect
-	elements []svgElement
-	layers   []*svgContext
-}
-
-// svgElement describes an svg element.
-type svgElement struct {
-	// style
-	style Style
-	// line
-	points []Point
-	// text
-	text   string
-	origin Point
-	// context
-	context *svgContext
-}
-
-// NewSVG creates a new svg canvas.
-func NewSVG(width, height Length) *SVG {
-	svg := &SVG{}
+// New creates a new SVG canvas.
+func New(width, height plot.Length) *Canvas {
+	svg := &Canvas{}
 	svg.Style = `text { text-shadow: -1px -1px 0 rgba(255,255,255,0.5),	1px -1px 0 rgba(255,255,255,0.5), 1px  1px 0 rgba(255,255,255,0.5), -1px  1px 0 rgba(255,255,255,0.5); }`
 	svg.bounds.Max.X = width
 	svg.bounds.Max.Y = height
 	return svg
 }
 
+// context describes a svg drawing context.
+type context struct {
+	index int
+	clip  bool
+	// bounds relative to parent
+	bounds   plot.Rect
+	elements []element
+	layers   []*context
+}
+
+// element describes an svg element.
+type element struct {
+	// style
+	style plot.Style
+	// line
+	points []plot.Point
+	// text
+	text   string
+	origin plot.Point
+	// context
+	context *context
+}
+
 // Bytes returns svg context as a byte array.
-func (svg *SVG) Bytes() []byte {
+func (svg *Canvas) Bytes() []byte {
 	var buffer bytes.Buffer
 	svg.WriteTo(&buffer)
 	return buffer.Bytes()
 }
 
 // Bounds returns the bounds in the global size.
-func (svg *svgContext) Bounds() Rect {
+func (svg *context) Bounds() plot.Rect {
 	return svg.bounds.Zero()
 }
 
 // Size returns the size of the context.
-func (svg *svgContext) Size() Point {
+func (svg *context) Size() plot.Point {
 	return svg.bounds.Size()
 }
 
 // context creates a clipped subcontext.
-func (svg *svgContext) context(r Rect, clip bool) Canvas {
-	element := svgElement{}
-	element.context = &svgContext{}
+func (svg *context) context(r plot.Rect, clip bool) plot.Canvas {
+	element := element{}
+	element.context = &context{}
 	element.context.clip = clip
 	element.context.bounds = r
 	svg.elements = append(svg.elements, element)
 	return element.context
 }
 
-// Context creates a subcontext bounded to r.
-func (svg *svgContext) Context(r Rect) Canvas {
+// context creates a subcontext bounded to r.
+func (svg *context) Context(r plot.Rect) plot.Canvas {
 	return svg.context(r, false)
 }
 
 // Clip clips to rect.
-func (svg *svgContext) Clip(r Rect) Canvas {
+func (svg *context) Clip(r plot.Rect) plot.Canvas {
 	return svg.context(r, true)
 }
 
 // Layer returns an layer above or below current state.
-func (svg *svgContext) Layer(index int) Canvas {
+func (svg *context) Layer(index int) plot.Canvas {
 	if index == 0 {
 		return svg
 	}
@@ -96,7 +100,7 @@ func (svg *svgContext) Layer(index int) Canvas {
 	if i < len(svg.layers) && svg.layers[i].index == index {
 		return svg.layers[i]
 	} else {
-		layer := &svgContext{}
+		layer := &context{}
 		layer.index = index
 		layer.bounds = svg.bounds.Zero()
 
@@ -108,9 +112,9 @@ func (svg *svgContext) Layer(index int) Canvas {
 }
 
 // Text draws text.
-func (svg *svgContext) Text(text string, at Point, style *Style) {
-	style.mustExist()
-	svg.elements = append(svg.elements, svgElement{
+func (svg *context) Text(text string, at plot.Point, style *plot.Style) {
+	mustExist(style)
+	svg.elements = append(svg.elements, element{
 		text:   text,
 		origin: at,
 		style:  *style,
@@ -118,21 +122,21 @@ func (svg *svgContext) Text(text string, at Point, style *Style) {
 }
 
 // Poly draws a polygon.
-func (svg *svgContext) Poly(points []Point, style *Style) {
-	style.mustExist()
-	svg.elements = append(svg.elements, svgElement{
+func (svg *context) Poly(points []plot.Point, style *plot.Style) {
+	mustExist(style)
+	svg.elements = append(svg.elements, element{
 		points: points,
 		style:  *style,
 	})
 }
 
 // Rect draws a rectangle.
-func (svg *svgContext) Rect(r Rect, style *Style) {
+func (svg *context) Rect(r plot.Rect, style *plot.Style) {
 	svg.Poly(r.Points(), style)
 }
 
 // WriteTo writes svg content to dst.
-func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
+func (svg *Canvas) WriteTo(dst io.Writer) (n int64, err error) {
 	w := &writer{}
 	w.Writer = dst
 
@@ -140,7 +144,7 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 
 	// svg wrapper
 	w.Print(`<?xml version="1.0" standalone="no"?>`)
-	w.Print(`<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">`)
+	w.Print(`<!DOCTYPE svg PUBLIC "-//W3C//DTD Canvas 1.0//EN" "http://www.w3.org/TR/2001/REC-Canvas-20010904/DTD/svg10.dtd">`)
 	size := svg.bounds.Size()
 	w.Print(`<svg xmlns='http://www.w3.org/2000/svg' xmlns:loov='http://www.loov.io' width='%vpx' height='%vpx'>`, size.X, size.Y)
 	defer w.Print(`</svg>`)
@@ -153,10 +157,10 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 	w.Print(`<g transform='translate(0.5, 0.5)'>`)
 	defer w.Print(`</g>`)
 
-	var writeLayer func(svg *svgContext)
-	var writeElement func(svg *svgContext, el *svgElement)
+	var writeLayer func(svg *context)
+	var writeElement func(svg *context, el *element)
 
-	writeLayer = func(svg *svgContext) {
+	writeLayer = func(svg *context) {
 		if svg.clip {
 			id++
 			size := svg.bounds.Size()
@@ -201,7 +205,7 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 		}
 	}
 
-	writeElement = func(svg *svgContext, el *svgElement) {
+	writeElement = func(svg *context, el *element) {
 		if len(el.points) > 0 {
 			w.Printf(`<polyline `)
 			w.writePolyStyle(&el.style)
@@ -223,13 +227,13 @@ func (svg *SVG) WriteTo(dst io.Writer) (n int64, err error) {
 		}
 	}
 
-	writeLayer(&svg.svgContext)
+	writeLayer(&svg.context)
 
 	return w.total, w.err
 }
 
 // writeTextStyle writes text styling.
-func (w *writer) writeTextStyle(style *Style) {
+func (w *writer) writeTextStyle(style *plot.Style) {
 	// TODO: merge with writePolyStyle
 	if style.Class != "" {
 		w.Printf(` class='`)
@@ -262,7 +266,7 @@ func (w *writer) writeTextStyle(style *Style) {
 }
 
 // writePolyStyle writes a polygon class and styling.
-func (w *writer) writePolyStyle(style *Style) {
+func (w *writer) writePolyStyle(style *plot.Style) {
 	if style.Class != "" {
 		w.Printf(` class='`)
 		xml.EscapeText(w, []byte(style.Class))
@@ -355,3 +359,11 @@ func (w *writer) Print(format string, args ...interface{}) { fmt.Fprintf(w, form
 
 // Printf is a convenience function for writing svg content.
 func (w *writer) Printf(format string, args ...interface{}) { fmt.Fprintf(w, format, args...) }
+
+
+// mustExists checks whether style is valid and panics if it is not.
+func mustExist(style *plot.Style)  {
+	if style == nil {
+		panic("style missing")
+	}
+}

@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/loov/plot"
+	"github.com/loov/plot/plotsvg"
 )
 
 func main() {
@@ -72,7 +73,7 @@ func main() {
 			)
 		}
 
-		svg := plot.NewSVG(800, float64(150*len(datasets)))
+		svg := plotsvg.New(800, float64(150*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("density.svg", svg.Bytes(), 0755)
 	}
@@ -110,7 +111,7 @@ func main() {
 			)
 		}
 
-		svg := plot.NewSVG(800, float64(150*len(datasets)))
+		svg := plotsvg.New(800, float64(150*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("violin.svg", svg.Bytes(), 0755)
 	}
@@ -145,7 +146,7 @@ func main() {
 			)
 		}
 
-		svg := plot.NewSVG(800, float64(150*len(datasets)))
+		svg := plotsvg.New(800, float64(150*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("percentiles.svg", svg.Bytes(), 0755)
 	}
@@ -191,7 +192,7 @@ func main() {
 			)
 		}
 
-		svg := plot.NewSVG(800, float64(150*len(datasets)))
+		svg := plotsvg.New(800, float64(150*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("line-stack.svg", svg.Bytes(), 0755)
 	}
@@ -234,7 +235,7 @@ func main() {
 			)
 		}
 
-		svg := plot.NewSVG(800, float64(150*len(datasets)))
+		svg := plotsvg.New(800, float64(150*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("bar-chart.svg", svg.Bytes(), 0755)
 
@@ -243,7 +244,7 @@ func main() {
 		}
 		//p.X.Transform = plot.NewLog1pTransform(2)
 
-		svg = plot.NewSVG(800, float64(150*len(datasets)))
+		svg = plotsvg.New(800, float64(150*len(datasets)))
 		p.Draw(svg)
 		ioutil.WriteFile("bar-chart-dynamic.svg", svg.Bytes(), 0755)
 	}
