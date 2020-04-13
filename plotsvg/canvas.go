@@ -257,10 +257,18 @@ func (w *writer) writeTextStyle(style *plot.Style) {
 		w.Printf(`font-size: %vpx;`, style.Size)
 	}
 	if style.Stroke != nil {
-		w.Printf(`color: %v;`, convertColorToHex(style.Stroke))
+		color, opacity := convertColorToHex(style.Stroke)
+		w.Printf(`stroke: %v;`, color)
+		if opacity != "" {
+			w.Printf(`stroke-opacity: %v;`, opacity)
+		}
 	}
 	if style.Fill != nil {
-		w.Printf(`fill: %v;`, convertColorToHex(style.Fill))
+		color, opacity := convertColorToHex(style.Fill)
+		w.Printf(`fill: %v;`, color)
+		if opacity != "" {
+			w.Printf(`fill-opacity: %v;`, opacity)
+		}
 	}
 }
 
@@ -280,13 +288,21 @@ func (w *writer) writePolyStyle(style *plot.Style) {
 	defer w.Printf(`'`)
 
 	if style.Stroke != nil {
-		w.Printf(`stroke: %v;`, convertColorToHex(style.Stroke))
+		color, opacity := convertColorToHex(style.Stroke)
+		w.Printf(`stroke: %v;`, color)
+		if opacity != "" {
+			w.Printf(`stroke-opacity: %v;`, opacity)
+		}
 	} else {
 		w.Printf(`stroke: transparent;`)
 	}
 
 	if style.Fill != nil {
-		w.Printf(`fill: %v;`, convertColorToHex(style.Fill))
+		color, opacity := convertColorToHex(style.Fill)
+		w.Printf(`fill: %v;`, color)
+		if opacity != "" {
+			w.Printf(`fill-opacity: %v;`, opacity)
+		}
 	} else {
 		w.Printf(`fill: transparent;`)
 	}
@@ -335,9 +351,8 @@ func (w *writer) Print(format string, args ...interface{}) { fmt.Fprintf(w, form
 // Printf is a convenience function for writing svg content.
 func (w *writer) Printf(format string, args ...interface{}) { fmt.Fprintf(w, format, args...) }
 
-
 // mustExists checks whether style is valid and panics if it is not.
-func mustExist(style *plot.Style)  {
+func mustExist(style *plot.Style) {
 	if style == nil {
 		panic("style missing")
 	}

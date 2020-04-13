@@ -6,7 +6,7 @@ import (
 )
 
 // convertColorToHex converts color to an hex encoded string.
-func convertColorToHex(color color.Color) string {
+func convertColorToHex(color color.Color) (hex string, opacity string) {
 	r, g, b, a := color.RGBA()
 	if a > 0 {
 		r, g, b, a = r*0xff/a, g*0xff/a, b*0xff/a, a/0xff
@@ -25,6 +25,14 @@ func convertColorToHex(color color.Color) string {
 	} else {
 		r, g, b, a = 0, 0, 0, 0
 	}
-	hex := r<<24 | g<<16 | b<<8 | a
-	return fmt.Sprintf("#%08x", hex)
+
+	hexv := r<<16 | g<<8 | b<<0
+	hex = fmt.Sprintf("#%06x", hexv)
+
+	if a == 0xFF {
+		return hex, ""
+	} else if a == 0x00 {
+		return hex, "0"
+	}
+	return hex, fmt.Sprintf("%.2f", float64(a)/float64(0xFF))
 }
