@@ -153,7 +153,7 @@ func main() {
 	{ // line plot
 		p := plot.New()
 		stack := plot.NewHStack()
-		stack.Margin = plot.R(5, 0, 5, 0)
+		stack.Margin = plot.R(20, 20, 20, 20)
 		p.Add(stack)
 
 		sizes := []int{1, 2, 4, 8, 1024, 8196}
@@ -176,11 +176,17 @@ func main() {
 			sizesf := plot.IntsToFloat64s(sizes)
 			valuesf := plot.IntsToFloat64s(values)
 			nanos := plot.NewLine("", plot.Points(sizesf, valuesf))
+
+			labelsLeftBottom := plot.NewTickLabels()
+			labelsTopRight := plot.NewTickLabels()
+			labelsTopRight.X.Side = 1
+			labelsTopRight.Y.Side = 1
 			stack.AddGroup(
 				plot.NewGrid(),
 				plot.NewGizmo(),
 				nanos,
-				plot.NewTickLabels(),
+				labelsLeftBottom,
+				labelsTopRight,
 				plot.NewXLabel("Case "+strconv.Itoa(i+1)),
 			)
 		}
