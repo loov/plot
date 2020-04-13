@@ -145,7 +145,7 @@ func (svg *Canvas) WriteTo(dst io.Writer) (n int64, err error) {
 	w.Print(`<?xml version="1.0" standalone="no"?>`)
 	w.Print(`<!DOCTYPE svg PUBLIC "-//W3C//DTD Canvas 1.0//EN" "http://www.w3.org/TR/2001/REC-Canvas-20010904/DTD/svg10.dtd">`)
 	size := svg.bounds.Size()
-	w.Print(`<svg xmlns='http://www.w3.org/2000/svg' xmlns:loov='http://www.loov.io' width='%vpx' height='%vpx'>`, size.X, size.Y)
+	w.Print(`<svg xmlns='http://www.w3.org/2000/svg' xmlns:loov='http://www.loov.io' width='%vpx' height='%vpx' viewBox='0 0 %v %v'>`, size.X, size.Y, size.X, size.Y)
 	defer w.Print(`</svg>`)
 
 	if svg.Style != "" {
