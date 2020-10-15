@@ -34,7 +34,7 @@ func (style *Style) IsZero() bool {
 		return true
 	}
 
-	return style.Stroke == nil && style.Fill == nil && style.Size == 0
+	return style.Stroke == nil && style.Fill == nil && style.Size == 0 && style.Font == ""
 }
 
 // Theme is a collection of different default styles.

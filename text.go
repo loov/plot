@@ -29,9 +29,15 @@ func (box *Textbox) Draw(plot *Plot, canvas Canvas) {
 	if style.Size == 0 {
 		style.Size = 10
 	}
+	if !box.Style.Origin.Empty() {
+		style.Origin = box.Style.Origin
+	}
 
 	lineHeight := style.Size * 1.1
-	at := Point{0, lineHeight}
+
+	at := canvas.Bounds().UnitLocation(style.Origin)
+	at.Y = lineHeight
+
 	for _, line := range box.Lines {
 		canvas.Text(line, at, &style)
 		at.Y += lineHeight
