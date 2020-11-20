@@ -7,6 +7,7 @@ import (
 
 // convertColorToHex converts color to an hex encoded string.
 func convertColorToHex(color color.Color) (hex string, opacity string) {
+	// TODO: this calculation looks wrong
 	r, g, b, a := color.RGBA()
 	if a > 0 {
 		r, g, b, a = r*0xff/a, g*0xff/a, b*0xff/a, a/0xff
