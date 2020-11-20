@@ -4,9 +4,13 @@ import (
 	"sort"
 
 	"gioui.org/f32"
+	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/text"
+	"gioui.org/unit"
+	"gioui.org/widget"
 	"github.com/loov/plot"
 )
 
@@ -14,12 +18,14 @@ var _ plot.Canvas = (*Canvas)(nil)
 
 // Canvas describes the top-level ptx drawing context.
 type Canvas struct {
+	Shaper text.Shaper
+
 	context
 }
 
 // New creates a new SVG canvas.
-func New(size f32.Point) *Canvas {
-	ptx := &Canvas{}
+func New(shaper text.Shaper, size f32.Point) *Canvas {
+	ptx := &Canvas{Shaper: shaper}
 	ptx.bounds.Max.X = plot.Length(size.X)
 	ptx.bounds.Max.Y = plot.Length(size.Y)
 	return ptx
@@ -126,19 +132,19 @@ func (ptx *context) Rect(r plot.Rect, style *plot.Style) {
 }
 
 // Layout renders plot to gtx.
-func (c *Canvas) Add(ops *op.Ops) {
-	defer op.Push(ops).Pop()
-	c.addLayer(&c.context, ops)
+func (c *Canvas) Add(gtx layout.Context) {
+	defer op.Push(gtx.Ops).Pop()
+	c.addLayer(&c.context, gtx)
 }
 
-func (c *Canvas) addLayer(ptx *context, ops *op.Ops) {
-	defer op.Push(ops).Pop()
+func (c *Canvas) addLayer(ptx *context, gtx layout.Context) {
+	defer op.Push(gtx.Ops).Pop()
 
 	if !ptx.bounds.Min.Empty() {
-		op.Offset(pt(ptx.bounds.Min)).Add(ops)
+		op.Offset(pt(ptx.bounds.Min)).Add(gtx.Ops)
 	}
 	if ptx.clip {
-		clip.RRect{Rect: rect(ptx.bounds.Zero())}.Add(ops)
+		clip.RRect{Rect: rect(ptx.bounds.Zero())}.Add(gtx.Ops)
 	}
 
 	after := 0
@@ -147,33 +153,33 @@ func (c *Canvas) addLayer(ptx *context, ops *op.Ops) {
 			after = i
 			break
 		}
-		c.addLayer(layer, ops)
+		c.addLayer(layer, gtx)
 	}
 
 	if len(ptx.elements) > 0 {
 		for _, el := range ptx.elements {
-			c.addElement(&el, ops)
+			c.addElement(&el, gtx)
 		}
 	}
 
 	for _, layer := range ptx.layers[after:] {
-		c.addLayer(layer, ops)
+		c.addLayer(layer, gtx)
 	}
 }
 
-func (c *Canvas) addElement(el *element, ops *op.Ops) {
+func (c *Canvas) addElement(el *element, gtx layout.Context) {
 	if len(el.points) > 0 {
-		c.addShape(el, ops)
+		c.addShape(el, gtx)
 	}
 	if el.text != "" {
-		c.addText(el, ops)
+		c.addText(el, gtx)
 	}
 	if el.context != nil {
-		c.addLayer(el.context, ops)
+		c.addLayer(el.context, gtx)
 	}
 }
 
-func (c *Canvas) addShape(el *element, ops *op.Ops) {
+func (c *Canvas) addShape(el *element, gtx layout.Context) {
 	style := &el.style
 	if len(el.points) == 0 {
 		return
@@ -183,31 +189,31 @@ func (c *Canvas) addShape(el *element, ops *op.Ops) {
 	}
 
 	if style.Fill != nil {
-		stack := op.Push(ops)
-		path := el.addPath(ops)
-		path.Outline().Add(ops)
-		paint.ColorOp{Color: convertColor(style.Fill)}.Add(ops)
-		paint.PaintOp{}.Add(ops)
+		stack := op.Push(gtx.Ops)
+		path := el.addPath(gtx)
+		path.Outline().Add(gtx.Ops)
+		paint.ColorOp{Color: convertColor(style.Fill)}.Add(gtx.Ops)
+		paint.PaintOp{}.Add(gtx.Ops)
 		stack.Pop()
 	}
 
 	if style.Stroke != nil {
 		// TODO: support dashes
-		stack := op.Push(ops)
-		path := el.addPath(ops)
+		stack := op.Push(gtx.Ops)
+		path := el.addPath(gtx)
 		path.Stroke(float32(style.Size), clip.StrokeStyle{
 			Cap:  clip.FlatCap,
 			Join: clip.RoundJoin,
-		}).Add(ops)
-		paint.ColorOp{Color: convertColor(style.Stroke)}.Add(ops)
-		paint.PaintOp{}.Add(ops)
+		}).Add(gtx.Ops)
+		paint.ColorOp{Color: convertColor(style.Stroke)}.Add(gtx.Ops)
+		paint.PaintOp{}.Add(gtx.Ops)
 		stack.Pop()
 	}
 }
 
-func (el *element) addPath(ops *op.Ops) *clip.Path {
+func (el *element) addPath(gtx layout.Context) *clip.Path {
 	path := &clip.Path{}
-	path.Begin(ops)
+	path.Begin(gtx.Ops)
 	pre := el.points[0]
 	path.Move(pt(pre))
 	for _, p := range el.points[1:] {
@@ -217,70 +223,21 @@ func (el *element) addPath(ops *op.Ops) *clip.Path {
 	return path
 }
 
-func (c *Canvas) addText(el *element, ops *op.Ops) {
-	/*
-		w.Printf(`<text x='%.2f' y='%.2f' `, el.origin.X, el.origin.Y)
-		w.writeTextStyle(&el.style)
-		w.Printf(`>`)
-		xml.EscapeText(w, []byte(el.text))
-		w.Print(`</text>`)
+func (c *Canvas) addText(el *element, gtx layout.Context) {
+	style := &el.style
+	if style.Font == "" && style.Size == 0 && style.Stroke == nil && style.Fill == nil {
+		return
+	}
+	defer op.Push(gtx.Ops).Pop()
 
-		// TODO: merge with writePolyStyle
-		if style.Class != "" {
-			w.Printf(` class='`)
-			xml.EscapeText(w, []byte(style.Class))
-			w.Printf(`'`)
-		}
+	op.Offset(pt(el.origin)).Add(gtx.Ops)
 
-		if style.Rotation != 0 {
-			w.Printf(`transform="rotate(%.2f)" `, style.Rotation*180/math.Pi)
-		}
+	// TODO: style.Rotation
+	// TODO: style.Origin
+	// TODO: style.Font
+	// TODO: style.Stroke
+	// TODO: style.Fill
 
-		if style.Origin.X == 0 {
-			w.Printf(`text-anchor="middle" `)
-		} else if style.Origin.X == 1 {
-			w.Printf(`text-anchor="end" `)
-		} else if style.Origin.X == -1 {
-			w.Printf(`text-anchor="start" `)
-		}
-
-		if style.Origin.Y == 0 {
-			w.Printf(`alignment-baseline="middle" `)
-		} else if style.Origin.Y == 1 {
-			w.Printf(`alignment-baseline="baseline" `)
-		} else if style.Origin.Y == -1 {
-			w.Printf(`alignment-baseline="hanging" `)
-		}
-
-		if style.Font == "" && style.Size == 0 && style.Stroke == nil && style.Fill == nil {
-			return
-		}
-
-		w.Printf(` style='`)
-		defer w.Printf(`' `)
-
-		if style.Font != "" {
-			w.Printf(`font-family: "`)
-			// TODO, verify escaping
-			xml.EscapeText(w, []byte(style.Font))
-			w.Printf(`";`)
-		}
-		if style.Size != 0 {
-			w.Printf(`font-size: %vpx;`, style.Size)
-		}
-		if style.Stroke != nil {
-			color, opacity := convertColorToHex(style.Stroke)
-			w.Printf(`stroke: %v;`, color)
-			if opacity != "" {
-				w.Printf(`stroke-opacity: %v;`, opacity)
-			}
-		}
-		if style.Fill != nil {
-			color, opacity := convertColorToHex(style.Fill)
-			w.Printf(`fill: %v;`, color)
-			if opacity != "" {
-				w.Printf(`fill-opacity: %v;`, opacity)
-			}
-		}
-	*/
+	textSize := unit.Px(float32(style.Size))
+	widget.Label{}.Layout(gtx, c.Shaper, text.Font{}, textSize, el.text)
 }

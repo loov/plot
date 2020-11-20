@@ -10,11 +10,13 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/f32"
+	"gioui.org/font/gofont"
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
+	"gioui.org/text"
 	"gioui.org/unit"
 	"github.com/loov/plot"
 	"github.com/loov/plot/plotgio"
@@ -38,6 +40,8 @@ func loop(w *app.Window) error {
 		datasets = append(datasets, NewDataset(N))
 	}
 
+	shaper := text.NewCache(gofont.Collection())
+
 	var ops op.Ops
 	for {
 		e := <-w.Events()
@@ -48,11 +52,11 @@ func loop(w *app.Window) error {
 			gtx := layout.NewContext(&ops, e)
 
 			layout.Flex{}.Layout(gtx,
-				layout.Flexed(1, fill(0, datasets.DensityPlot)),
-				layout.Flexed(1, fill(1, datasets.ViolinPlot)),
-				// layout.Flexed(1, fill(2, datasets.PercentilesPlot)),
-				layout.Flexed(1, fill(3, datasets.LinePlot)),
-				layout.Flexed(1, fill(4, datasets.BarPlot)),
+				layout.Flexed(1, fill(shaper, datasets.DensityPlot)),
+				layout.Flexed(1, fill(shaper, datasets.ViolinPlot)),
+				layout.Flexed(1, fill(shaper, datasets.PercentilesPlot)),
+				layout.Flexed(1, fill(shaper, datasets.LinePlot)),
+				layout.Flexed(1, fill(shaper, datasets.BarPlot)),
 			)
 
 			e.Frame(gtx.Ops)
@@ -60,7 +64,7 @@ func loop(w *app.Window) error {
 	}
 }
 
-func fill(k int, fn func(size f32.Point, gtx layout.Context)) func(gtx layout.Context) layout.Dimensions {
+func fill(shaper text.Shaper, fn func(size f32.Point, shaper text.Shaper, gtx layout.Context)) func(gtx layout.Context) layout.Dimensions {
 	return func(gtx layout.Context) layout.Dimensions {
 		size := layout.FPt(gtx.Constraints.Max)
 
@@ -78,7 +82,7 @@ func fill(k int, fn func(size f32.Point, gtx layout.Context)) func(gtx layout.Co
 		paint.PaintOp{}.Add(gtx.Ops)
 		stack.Pop()
 
-		fn(size, gtx)
+		fn(size, shaper, gtx)
 		return layout.Dimensions{
 			Size: gtx.Constraints.Max,
 		}
@@ -127,7 +131,7 @@ func NewDataset(size int) *Dataset {
 
 var defaultMargin = plot.R(20, 20, 20, 20)
 
-func (datasets Datasets) DensityPlot(size f32.Point, gtx layout.Context) {
+func (datasets Datasets) DensityPlot(size f32.Point, shaper text.Shaper, gtx layout.Context) {
 	p := plot.New()
 	stack := plot.NewVStack()
 	stack.Margin = defaultMargin
@@ -154,12 +158,12 @@ func (datasets Datasets) DensityPlot(size f32.Point, gtx layout.Context) {
 		)
 	}
 
-	canvas := plotgio.New(size)
+	canvas := plotgio.New(shaper, size)
 	p.Draw(canvas)
-	canvas.Add(gtx.Ops)
+	canvas.Add(gtx)
 }
 
-func (datasets Datasets) ViolinPlot(size f32.Point, gtx layout.Context) {
+func (datasets Datasets) ViolinPlot(size f32.Point, shaper text.Shaper, gtx layout.Context) {
 	p := plot.New()
 	stack := plot.NewHStack()
 	stack.Margin = defaultMargin
@@ -189,12 +193,12 @@ func (datasets Datasets) ViolinPlot(size f32.Point, gtx layout.Context) {
 		)
 	}
 
-	canvas := plotgio.New(size)
+	canvas := plotgio.New(shaper, size)
 	p.Draw(canvas)
-	canvas.Add(gtx.Ops)
+	canvas.Add(gtx)
 }
 
-func (datasets Datasets) PercentilesPlot(size f32.Point, gtx layout.Context) {
+func (datasets Datasets) PercentilesPlot(size f32.Point, shaper text.Shaper, gtx layout.Context) {
 	p := plot.New()
 	p.X = plot.NewPercentilesAxis()
 
@@ -221,12 +225,12 @@ func (datasets Datasets) PercentilesPlot(size f32.Point, gtx layout.Context) {
 		)
 	}
 
-	canvas := plotgio.New(size)
+	canvas := plotgio.New(shaper, size)
 	p.Draw(canvas)
-	canvas.Add(gtx.Ops)
+	canvas.Add(gtx)
 }
 
-func (datasets Datasets) LinePlot(size f32.Point, gtx layout.Context) {
+func (datasets Datasets) LinePlot(size f32.Point, shaper text.Shaper, gtx layout.Context) {
 	p := plot.New()
 	stack := plot.NewHStack()
 	stack.Margin = defaultMargin
@@ -257,12 +261,12 @@ func (datasets Datasets) LinePlot(size f32.Point, gtx layout.Context) {
 		)
 	}
 
-	canvas := plotgio.New(size)
+	canvas := plotgio.New(shaper, size)
 	p.Draw(canvas)
-	canvas.Add(gtx.Ops)
+	canvas.Add(gtx)
 }
 
-func (datasets Datasets) BarPlot(size f32.Point, gtx layout.Context) {
+func (datasets Datasets) BarPlot(size f32.Point, shaper text.Shaper, gtx layout.Context) {
 	p := plot.New()
 	stack := plot.NewHStack()
 	stack.Margin = defaultMargin
@@ -290,7 +294,7 @@ func (datasets Datasets) BarPlot(size f32.Point, gtx layout.Context) {
 		)
 	}
 
-	canvas := plotgio.New(size)
+	canvas := plotgio.New(shaper, size)
 	p.Draw(canvas)
-	canvas.Add(gtx.Ops)
+	canvas.Add(gtx)
 }
