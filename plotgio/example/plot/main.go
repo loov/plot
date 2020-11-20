@@ -13,13 +13,16 @@ import (
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
+	"gioui.org/unit"
 	"github.com/loov/plot"
 	"github.com/loov/plot/plotgio"
 )
 
 func main() {
 	go func() {
-		w := app.NewWindow()
+		w := app.NewWindow(app.Size(unit.Px(240*5), unit.Px(240)))
 		if err := loop(w); err != nil {
 			log.Fatal(err)
 		}
@@ -45,11 +48,11 @@ func loop(w *app.Window) error {
 			gtx := layout.NewContext(&ops, e)
 
 			layout.Flex{}.Layout(gtx,
-				layout.Flexed(1, fill(datasets.DensityPlot)),
-				//layout.Flexed(1, fill(datasets.ViolinPlot)),
-				//layout.Flexed(1, fill(datasets.PercentilesPlot)),
-				//layout.Flexed(1, fill(datasets.LinePlot)),
-				//layout.Flexed(1, fill(datasets.BarPlot)),
+				layout.Flexed(1, fill(0, datasets.DensityPlot)),
+				layout.Flexed(1, fill(1, datasets.ViolinPlot)),
+				// layout.Flexed(1, fill(2, datasets.PercentilesPlot)),
+				layout.Flexed(1, fill(3, datasets.LinePlot)),
+				layout.Flexed(1, fill(4, datasets.BarPlot)),
 			)
 
 			e.Frame(gtx.Ops)
@@ -57,9 +60,24 @@ func loop(w *app.Window) error {
 	}
 }
 
-func fill(fn func(size f32.Point, gtx layout.Context)) func(gtx layout.Context) layout.Dimensions {
+func fill(k int, fn func(size f32.Point, gtx layout.Context)) func(gtx layout.Context) layout.Dimensions {
 	return func(gtx layout.Context) layout.Dimensions {
 		size := layout.FPt(gtx.Constraints.Max)
+
+		const p = 3
+		stack := op.Push(gtx.Ops)
+		clip.Border{
+			Rect:  f32.Rect(p, p, size.X-p, size.Y-p),
+			Width: 3,
+			Style: clip.StrokeStyle{
+				Cap:  clip.FlatCap,
+				Join: clip.BevelJoin,
+			},
+		}.Add(gtx.Ops)
+		paint.ColorOp{Color: color.NRGBA{0xC0, 0xFF, 0xC0, 0xff}}.Add(gtx.Ops)
+		paint.PaintOp{}.Add(gtx.Ops)
+		stack.Pop()
+
 		fn(size, gtx)
 		return layout.Dimensions{
 			Size: gtx.Constraints.Max,
@@ -142,19 +160,19 @@ func (datasets Datasets) ViolinPlot(size f32.Point, gtx layout.Context) {
 		red.Side = 0
 		red.Class = "red"
 		red.Stroke = color.NRGBA{200, 0, 0, 255}
-		red.Fill = color.NRGBA{200, 0, 0, 40}
+		red.Fill = color.NRGBA{200, 0, 0, 120}
 
 		green := plot.NewViolin("Green", dataset.Green)
 		green.Side = 1
 		green.Class = "green"
 		green.Stroke = color.NRGBA{0, 200, 0, 255}
-		green.Fill = color.NRGBA{0, 200, 0, 40}
+		green.Fill = color.NRGBA{0, 200, 0, 120}
 
 		blue := plot.NewViolin("Blue", dataset.Blue)
 		blue.Side = -1
 		blue.Class = "blue"
 		blue.Stroke = color.NRGBA{0, 0, 200, 255}
-		blue.Fill = color.NRGBA{0, 0, 200, 40}
+		blue.Fill = color.NRGBA{0, 0, 200, 120}
 
 		stack.AddGroup(
 			plot.NewGrid(),

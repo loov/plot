@@ -127,6 +127,7 @@ func (ptx *context) Rect(r plot.Rect, style *plot.Style) {
 
 // Layout renders plot to gtx.
 func (c *Canvas) Add(ops *op.Ops) {
+	defer op.Push(ops).Pop()
 	c.addLayer(&c.context, ops)
 }
 
