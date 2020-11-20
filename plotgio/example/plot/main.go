@@ -91,6 +91,9 @@ type Dataset struct {
 	Red   []float64
 	Green []float64
 	Blue  []float64
+
+	Sizes  []float64
+	Values []float64
 }
 
 func NewDataset(size int) *Dataset {
@@ -110,6 +113,15 @@ func NewDataset(size int) *Dataset {
 		dataset.Green[k] = 20 * (og + r()*r())
 		dataset.Blue[k] = 20 * (ob + r()*math.Sin(r()))
 	}
+
+	dataset.Sizes = []float64{1, 2, 4, 8, 1024, 8196}
+	dataset.Values = make([]float64, len(dataset.Sizes))
+	prev := float64(0)
+	for i := range dataset.Values {
+		dataset.Values[i] = prev + float64(i*rand.Intn(10)) + 100
+		prev = dataset.Values[i]
+	}
+
 	return dataset
 }
 
@@ -122,17 +134,14 @@ func (datasets Datasets) DensityPlot(size f32.Point, gtx layout.Context) {
 	p.Add(stack)
 	for i, dataset := range datasets {
 		red := plot.NewDensity("Red", dataset.Red)
-		red.Class = "red"
 		red.Stroke = color.NRGBA{200, 0, 0, 255}
 		red.Fill = color.NRGBA{200, 0, 0, 120}
 
 		green := plot.NewDensity("Green", dataset.Green)
-		green.Class = "green"
 		green.Stroke = color.NRGBA{0, 200, 0, 255}
 		green.Fill = color.NRGBA{0, 200, 0, 120}
 
 		blue := plot.NewDensity("Blue", dataset.Blue)
-		blue.Class = "blue"
 		blue.Stroke = color.NRGBA{0, 0, 200, 255}
 		blue.Fill = color.NRGBA{0, 0, 200, 120}
 
@@ -158,19 +167,16 @@ func (datasets Datasets) ViolinPlot(size f32.Point, gtx layout.Context) {
 	for i, dataset := range datasets {
 		red := plot.NewViolin("Red", dataset.Red)
 		red.Side = 0
-		red.Class = "red"
 		red.Stroke = color.NRGBA{200, 0, 0, 255}
 		red.Fill = color.NRGBA{200, 0, 0, 120}
 
 		green := plot.NewViolin("Green", dataset.Green)
 		green.Side = 1
-		green.Class = "green"
 		green.Stroke = color.NRGBA{0, 200, 0, 255}
 		green.Fill = color.NRGBA{0, 200, 0, 120}
 
 		blue := plot.NewViolin("Blue", dataset.Blue)
 		blue.Side = -1
-		blue.Class = "blue"
 		blue.Stroke = color.NRGBA{0, 0, 200, 255}
 		blue.Fill = color.NRGBA{0, 0, 200, 120}
 
@@ -198,15 +204,12 @@ func (datasets Datasets) PercentilesPlot(size f32.Point, gtx layout.Context) {
 	p.Add(stack)
 	for i, dataset := range datasets {
 		red := plot.NewPercentiles("Red", dataset.Red)
-		red.Class = "red"
 		red.Stroke = color.NRGBA{200, 0, 0, 255}
 
 		green := plot.NewPercentiles("Green", dataset.Green)
-		green.Class = "green"
 		green.Stroke = color.NRGBA{0, 200, 0, 255}
 
 		blue := plot.NewPercentiles("Blue", dataset.Blue)
-		blue.Class = "blue"
 		blue.Stroke = color.NRGBA{0, 0, 200, 255}
 
 		stack.AddGroup(
@@ -229,7 +232,6 @@ func (datasets Datasets) LinePlot(size f32.Point, gtx layout.Context) {
 	stack.Margin = defaultMargin
 	p.Add(stack)
 
-	sizes := []int{1, 2, 4, 8, 1024, 8196}
 	p.X.Transform = plot.NewLog1pTransform(2)
 	p.X.Ticks = plot.ManualTicks{
 		{Value: 1, Label: "1"},
@@ -238,17 +240,8 @@ func (datasets Datasets) LinePlot(size f32.Point, gtx layout.Context) {
 		{Value: 8196, Label: "8196"},
 	}
 
-	for i, _ := range datasets {
-		values := make([]int, len(sizes))
-		prev := 0
-		for i := range values {
-			values[i] = prev + i*rand.Intn(10) + 100
-			prev = values[i]
-		}
-
-		sizesf := plot.IntsToFloat64s(sizes)
-		valuesf := plot.IntsToFloat64s(values)
-		nanos := plot.NewLine("", plot.Points(sizesf, valuesf))
+	for i, dataset := range datasets {
+		nanos := plot.NewLine("", plot.Points(dataset.Sizes, dataset.Values))
 
 		labelsLeftBottom := plot.NewTickLabels()
 		labelsTopRight := plot.NewTickLabels()
@@ -275,7 +268,6 @@ func (datasets Datasets) BarPlot(size f32.Point, gtx layout.Context) {
 	stack.Margin = defaultMargin
 	p.Add(stack)
 
-	sizes := []int{1, 2, 4, 8, 1024, 8196}
 	p.X.Ticks = plot.ManualTicks{
 		{Value: 1, Label: "1"},
 		{Value: 4, Label: "4"},
@@ -285,17 +277,8 @@ func (datasets Datasets) BarPlot(size f32.Point, gtx layout.Context) {
 
 	bars := []*plot.Bar{}
 
-	for i, _ := range datasets {
-		values := make([]int, len(sizes))
-		prev := 0
-		for i := range values {
-			values[i] = prev + i*rand.Intn(10) + 100
-			prev = values[i]
-		}
-
-		sizesf := plot.IntsToFloat64s(sizes)
-		valuesf := plot.IntsToFloat64s(values)
-		nanos := plot.NewBar("", plot.Points(sizesf, valuesf))
+	for i, dataset := range datasets {
+		nanos := plot.NewBar("", plot.Points(dataset.Sizes, dataset.Values))
 		bars = append(bars, nanos)
 
 		stack.AddGroup(
