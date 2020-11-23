@@ -197,7 +197,7 @@ func (c *Canvas) addShape(el *element, gtx layout.Context) {
 		stack.Pop()
 	}
 
-	if style.Stroke != nil {
+	if style.Stroke != nil && style.Size > 0 {
 		// TODO: support dashes
 		stack := op.Push(gtx.Ops)
 		path := el.addPath(gtx)
@@ -214,11 +214,9 @@ func (c *Canvas) addShape(el *element, gtx layout.Context) {
 func (el *element) addPath(gtx layout.Context) *clip.Path {
 	path := &clip.Path{}
 	path.Begin(gtx.Ops)
-	pre := el.points[0]
-	path.Move(pt(pre))
+	path.MoveTo(pt(el.points[0]))
 	for _, p := range el.points[1:] {
-		path.Line(pt(p.Sub(pre)))
-		pre = p
+		path.LineTo(pt(p))
 	}
 	return path
 }
