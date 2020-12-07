@@ -138,14 +138,17 @@ func (datasets Datasets) DensityPlot(size f32.Point, shaper text.Shaper, gtx lay
 	p.Add(stack)
 	for i, dataset := range datasets {
 		red := plot.NewDensity("Red", dataset.Red)
+		red.Size = 1
 		red.Stroke = color.NRGBA{200, 0, 0, 255}
 		red.Fill = color.NRGBA{200, 0, 0, 120}
 
 		green := plot.NewDensity("Green", dataset.Green)
+		green.Size = 1
 		green.Stroke = color.NRGBA{0, 200, 0, 255}
 		green.Fill = color.NRGBA{0, 200, 0, 120}
 
 		blue := plot.NewDensity("Blue", dataset.Blue)
+		blue.Size = 1
 		blue.Stroke = color.NRGBA{0, 0, 200, 255}
 		blue.Fill = color.NRGBA{0, 0, 200, 120}
 
@@ -170,16 +173,19 @@ func (datasets Datasets) ViolinPlot(size f32.Point, shaper text.Shaper, gtx layo
 	p.Add(stack)
 	for i, dataset := range datasets {
 		red := plot.NewViolin("Red", dataset.Red)
+		red.Size = 1
 		red.Side = 0
 		red.Stroke = color.NRGBA{200, 0, 0, 255}
 		red.Fill = color.NRGBA{200, 0, 0, 120}
 
 		green := plot.NewViolin("Green", dataset.Green)
+		green.Size = 1
 		green.Side = 1
 		green.Stroke = color.NRGBA{0, 200, 0, 255}
 		green.Fill = color.NRGBA{0, 200, 0, 120}
 
 		blue := plot.NewViolin("Blue", dataset.Blue)
+		blue.Size = 1
 		blue.Side = -1
 		blue.Stroke = color.NRGBA{0, 0, 200, 255}
 		blue.Fill = color.NRGBA{0, 0, 200, 120}
@@ -209,12 +215,15 @@ func (datasets Datasets) PercentilesPlot(size f32.Point, shaper text.Shaper, gtx
 	for i, dataset := range datasets {
 		red := plot.NewPercentiles("Red", dataset.Red)
 		red.Stroke = color.NRGBA{200, 0, 0, 255}
+		red.Size = 1
 
 		green := plot.NewPercentiles("Green", dataset.Green)
 		green.Stroke = color.NRGBA{0, 200, 0, 255}
+		green.Size = 1
 
 		blue := plot.NewPercentiles("Blue", dataset.Blue)
 		blue.Stroke = color.NRGBA{0, 0, 200, 255}
+		blue.Size = 1
 
 		stack.AddGroup(
 			plot.NewGrid(),
