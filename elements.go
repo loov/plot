@@ -152,3 +152,71 @@ func (stack *HFlex) Draw(plot *Plot, canvas Canvas) {
 		el.Draw(plot, canvas.Context(block.Inset(stack.Margin)))
 	}
 }
+
+// VFlex implements horizontally stacked elements with non-equal sizes.
+type VFlex struct {
+	Margin Rect
+
+	fixedSize []float64
+	elements  Elements
+}
+
+// NewVFlex creates a vertically flexing elements.
+func NewVFlex() *VFlex { return &VFlex{} }
+
+// Stats calculates the stats from all elements.
+func (stack *VFlex) Stats() Stats { return stack.elements.Stats() }
+
+// Add adds an element with fixed size.
+func (stack *VFlex) Add(fixedSize float64, el Element) {
+	stack.elements.Add(el)
+	stack.fixedSize = append(stack.fixedSize, fixedSize)
+}
+
+// AddGroup adds a group of elements with fixed size.
+func (stack *VFlex) AddGroup(fixedSize float64, adds ...Element) {
+	stack.Add(fixedSize, Elements(adds))
+}
+
+// Draw draws elements.
+func (stack *VFlex) Draw(plot *Plot, canvas Canvas) {
+	if len(stack.elements) == 0 {
+		return
+	}
+
+	fixedSize := 0.0
+	flexCount := 0.0
+	for i, size := range stack.fixedSize {
+		fixedSize += size
+		if stack.elements[i] == nil {
+			continue
+		}
+		if size == 0 {
+			flexCount++
+		}
+	}
+
+	bounds := canvas.Bounds()
+	size := bounds.Size()
+
+	flexWidth := (bounds.Size().Y - fixedSize) / flexCount
+	min := bounds.Min
+	for i, el := range stack.elements {
+		elsize := stack.fixedSize[i]
+		if el == nil {
+			min.Y += elsize
+			continue
+		}
+		if elsize == 0 {
+			elsize = flexWidth
+		}
+
+		block := Rect{
+			min,
+			min.Add(Point{size.X, elsize}),
+		}
+		min.Y = block.Max.Y
+
+		el.Draw(plot, canvas.Context(block.Inset(stack.Margin)))
+	}
+}
