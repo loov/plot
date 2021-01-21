@@ -119,6 +119,12 @@ func (axis *Axis) Include(min, max float64) {
 	}
 }
 
+// MakeNice tries to adjust min, max such they look nice given the MajorTicks and MinorTicks.
+func (axis *Axis) MakeNice() {
+	axis.Min, axis.Max = niceAxis(axis.Min, axis.Max, axis.MajorTicks, axis.MinorTicks)
+	axis.fixNaN()
+}
+
 // detectAxis automatically figures out axes using element stats.
 func detectAxis(x, y *Axis, elements []Element) (X, Y *Axis) {
 	tx, ty := NewAxis(), NewAxis()
