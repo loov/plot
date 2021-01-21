@@ -238,7 +238,7 @@ func (w *writer) writeTextStyle(style *plot.Style) {
 	if style.Class != "" {
 		w.Printf(` class='`)
 		xml.EscapeText(w, []byte(style.Class))
-		w.Printf(`'`)
+		w.Printf(`' `)
 	}
 
 	if style.Rotation != 0 {
@@ -298,7 +298,7 @@ func (w *writer) writePolyStyle(style *plot.Style) {
 	if style.Class != "" {
 		w.Printf(` class='`)
 		xml.EscapeText(w, []byte(style.Class))
-		w.Printf(`'`)
+		w.Printf(`' `)
 	}
 
 	if style.Size == 0 && style.Stroke == nil && style.Fill == nil && len(style.Dash) == 0 {
