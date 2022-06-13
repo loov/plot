@@ -14,17 +14,16 @@ import (
 	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
-	"gioui.org/op/paint"
 	"gioui.org/text"
-	"gioui.org/unit"
+	"gioui.org/widget"
 	"github.com/loov/plot"
+
 	"github.com/loov/plot/plotgio"
 )
 
 func main() {
 	go func() {
-		w := app.NewWindow(app.Size(unit.Px(240*5), unit.Px(240)))
+		w := app.NewWindow(app.Size(240*5, 240))
 		if err := loop(w); err != nil {
 			log.Fatal(err)
 		}
@@ -66,26 +65,16 @@ func loop(w *app.Window) error {
 
 func fill(shaper text.Shaper, fn func(size f32.Point, shaper text.Shaper, gtx layout.Context)) func(gtx layout.Context) layout.Dimensions {
 	return func(gtx layout.Context) layout.Dimensions {
-		size := layout.FPt(gtx.Constraints.Max)
-
-		const p = 3
-		stack := op.Push(gtx.Ops)
-		clip.Border{
-			Rect:  f32.Rect(p, p, size.X-p, size.Y-p),
-			Width: 3,
-			Style: clip.StrokeStyle{
-				Cap:  clip.FlatCap,
-				Join: clip.BevelJoin,
-			},
-		}.Add(gtx.Ops)
-		paint.ColorOp{Color: color.NRGBA{0xC0, 0xFF, 0xC0, 0xff}}.Add(gtx.Ops)
-		paint.PaintOp{}.Add(gtx.Ops)
-		stack.Pop()
-
-		fn(size, shaper, gtx)
-		return layout.Dimensions{
-			Size: gtx.Constraints.Max,
-		}
+		const pad = 3
+		return widget.Border{
+			Color: color.NRGBA{R: 0xC0, G: 0xFF, B: 0xC0, A: 0xff},
+			Width: pad,
+		}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			return layout.UniformInset(pad).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				fn(layout.FPt(gtx.Constraints.Max), shaper, gtx)
+				return layout.Dimensions{Size: gtx.Constraints.Max}
+			})
+		})
 	}
 }
 

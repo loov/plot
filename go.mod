@@ -1,3 +1,3 @@
 module github.com/loov/plot
 
-go 1.12
+go 1.17

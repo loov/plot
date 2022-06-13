@@ -14,14 +14,14 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/text"
-	"gioui.org/unit"
 	"github.com/loov/plot"
+
 	"github.com/loov/plot/plotgio"
 )
 
 func main() {
 	go func() {
-		w := app.NewWindow(app.Size(unit.Px(400), unit.Px(300)))
+		w := app.NewWindow(app.Size(400, 300))
 		if err := loop(w); err != nil {
 			log.Fatal(err)
 		}

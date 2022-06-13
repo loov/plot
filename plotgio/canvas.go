@@ -1,6 +1,7 @@
 package plotgio
 
 import (
+	"image/color"
 	"sort"
 
 	"gioui.org/f32"
@@ -11,6 +12,7 @@ import (
 	"gioui.org/text"
 	"gioui.org/unit"
 	"gioui.org/widget"
+	"gioui.org/x/stroke"
 	"github.com/loov/plot"
 )
 
@@ -133,18 +135,15 @@ func (ptx *context) Rect(r plot.Rect, style *plot.Style) {
 
 // Layout renders plot to gtx.
 func (c *Canvas) Add(gtx layout.Context) {
-	defer op.Push(gtx.Ops).Pop()
 	c.addLayer(&c.context, gtx)
 }
 
 func (c *Canvas) addLayer(ptx *context, gtx layout.Context) {
-	defer op.Push(gtx.Ops).Pop()
-
 	if !ptx.bounds.Min.Empty() {
-		op.Offset(pt(ptx.bounds.Min)).Add(gtx.Ops)
+		defer op.Affine(f32.Affine2D{}.Offset(pt(ptx.bounds.Min))).Push(gtx.Ops).Pop()
 	}
 	if ptx.clip {
-		clip.RRect{Rect: rect(ptx.bounds.Zero())}.Add(gtx.Ops)
+		defer pushClipRect(ptx.bounds.Zero(), gtx.Ops).Pop()
 	}
 
 	after := 0
@@ -189,34 +188,43 @@ func (c *Canvas) addShape(el *element, gtx layout.Context) {
 	}
 
 	if style.Fill != nil {
-		stack := op.Push(gtx.Ops)
-		path := el.addPath(gtx)
-		path.Outline().Add(gtx.Ops)
-		paint.ColorOp{Color: convertColor(style.Fill)}.Add(gtx.Ops)
-		paint.PaintOp{}.Add(gtx.Ops)
-		stack.Pop()
+		paint.FillShape(gtx.Ops,
+			convertColor(style.Fill),
+			clip.Outline{
+				Path: el.addPath(gtx),
+			}.Op())
 	}
 
 	if style.Stroke != nil && style.Size > 0 {
 		// TODO: support dashes
-		stack := op.Push(gtx.Ops)
-		path := el.addPath(gtx)
-		path.Stroke(float32(style.Size), clip.StrokeStyle{
-			Cap:  clip.FlatCap,
-			Join: clip.RoundJoin,
-		}).Add(gtx.Ops)
-		paint.ColorOp{Color: convertColor(style.Stroke)}.Add(gtx.Ops)
-		paint.PaintOp{}.Add(gtx.Ops)
-		stack.Pop()
+		paint.FillShape(gtx.Ops,
+			convertColor(style.Stroke),
+			stroke.Stroke{
+				Path:  el.strokePath(),
+				Width: float32(style.Size), // TODO: should this be dp or sp or px?
+				Cap:   stroke.FlatCap,
+				Join:  stroke.RoundJoin,
+			}.Op(gtx.Ops),
+		)
 	}
 }
 
-func (el *element) addPath(gtx layout.Context) *clip.Path {
+func (el *element) addPath(gtx layout.Context) clip.PathSpec {
 	path := &clip.Path{}
 	path.Begin(gtx.Ops)
 	path.MoveTo(pt(el.points[0]))
 	for _, p := range el.points[1:] {
 		path.LineTo(pt(p))
+	}
+	return path.End()
+}
+
+func (el *element) strokePath() stroke.Path {
+	var path stroke.Path
+	path.Segments = make([]stroke.Segment, 0, len(el.points))
+	path.Segments = append(path.Segments, stroke.MoveTo(pt(el.points[0])))
+	for _, p := range el.points[1:] {
+		path.Segments = append(path.Segments, stroke.LineTo(pt(p)))
 	}
 	return path
 }
@@ -226,16 +234,17 @@ func (c *Canvas) addText(el *element, gtx layout.Context) {
 	if style.Font == "" && style.Size == 0 && style.Stroke == nil && style.Fill == nil {
 		return
 	}
-	defer op.Push(gtx.Ops).Pop()
-
-	op.Offset(pt(el.origin)).Add(gtx.Ops)
+	defer op.Offset(pt(el.origin).Round()).Push(gtx.Ops).Pop()
 
 	// TODO: style.Rotation
 	// TODO: style.Origin
 	// TODO: style.Font
 	// TODO: style.Stroke
-	// TODO: style.Fill
 
-	textSize := unit.Px(float32(style.Size))
-	widget.Label{}.Layout(gtx, c.Shaper, text.Font{}, textSize, el.text)
+	if style.Fill != nil {
+		paint.ColorOp{Color: convertColor(style.Fill)}.Add(gtx.Ops)
+	} else {
+		paint.ColorOp{Color: convertColor(color.Black)}.Add(gtx.Ops)
+	}
+	widget.Label{}.Layout(gtx, c.Shaper, text.Font{}, unit.Sp(style.Size), el.text)
 }
