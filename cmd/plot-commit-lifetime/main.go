@@ -52,7 +52,7 @@ func main() {
 		fail(err)
 	}
 
-	maxLifetime := 2 * 30 * 24 * time.Hour
+	maxLifetime := 6 * 30 * 24 * time.Hour
 
 	var commits []Commit
 
@@ -102,6 +102,22 @@ func main() {
 	p.Y.Max = 1
 	p.Y.Min = -0.3
 
+	p.X.Transform = plot.NewLog1pTransform(2)
+	p.X.Ticks = plot.ManualTicks{
+		{Value: 0, Label: "0"},
+		{Value: 1, Label: "1h"},
+		{Value: 2, Label: "2h"},
+		{Value: 6, Label: "6h"},
+		{Value: 12, Label: "12h"},
+		{Value: 1 * 24, Label: "1d"},
+		{Value: 2 * 24, Label: "2d"},
+		{Value: 7 * 24, Label: "1w"},
+		{Value: 2 * 7 * 24, Label: "2w"},
+		{Value: 1 * 30 * 24, Label: "1m"},
+		{Value: 2 * 30 * 24, Label: "2m"},
+		{Value: 6 * 30 * 24, Label: "6m"},
+	}
+
 	for _, g := range ordered {
 		flex := plot.NewHFlex()
 
@@ -119,10 +135,30 @@ func main() {
 		labels := plot.NewTickLabelsX()
 		labels.Style.Origin = plot.Point{X: 0, Y: -1}
 
+		density := plot.NewDensity("", plot.DurationTo(lifetimes, time.Hour))
+		density.Kernel = 0.05
+
+		line := plot.NewLine("", plot.Ps(
+			0, 0.1,
+			1, 0.2,
+			2, 0.3,
+			6, 0.4,
+			12, 0.5,
+			1*24, 0.6,
+			2*24, 0.7,
+			7*24, 0.8,
+			2*7*24, 0.9,
+			1*30*24, 1.0,
+			2*30*24, 1.1,
+			6*30*24, 1.2,
+		))
+		_ = line
+
 		flex.AddGroup(0,
 			// plot.NewGrid(),
 			plot.NewGizmo(),
-			plot.NewDensity("", plot.DurationTo(lifetimes, time.Hour)),
+			density,
+			// line,
 			labels,
 		)
 		stack.Add(flex)

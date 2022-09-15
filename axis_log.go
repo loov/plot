@@ -55,7 +55,6 @@ func NewLog1pTransform(base float64) *Log1pTransform {
 	}
 }
 
-// ilog implements mirrored log.
 func (tx *Log1pTransform) log(v float64) float64 {
 	if v == 0 {
 		return 0
@@ -66,6 +65,7 @@ func (tx *Log1pTransform) log(v float64) float64 {
 	}
 }
 
+// ilog implements mirrored log.
 func (tx *Log1pTransform) ilog(v float64) float64 {
 	if v == 0 {
 		return 0
