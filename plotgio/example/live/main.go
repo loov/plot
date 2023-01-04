@@ -31,7 +31,7 @@ func main() {
 }
 
 func loop(w *app.Window) error {
-	shaper := text.NewCache(gofont.Collection())
+	shaper := text.NewShaper(gofont.Collection())
 
 	dataset := &Dataset{
 		Shaper: shaper,
@@ -61,7 +61,7 @@ func loop(w *app.Window) error {
 }
 
 type Dataset struct {
-	Shaper text.Shaper
+	Shaper *text.Shaper
 	Values [200]float64
 
 	points []plot.Point

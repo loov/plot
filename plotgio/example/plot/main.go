@@ -39,7 +39,7 @@ func loop(w *app.Window) error {
 		datasets = append(datasets, NewDataset(N))
 	}
 
-	shaper := text.NewCache(gofont.Collection())
+	shaper := text.NewShaper(gofont.Collection())
 
 	var ops op.Ops
 	for {
@@ -63,7 +63,7 @@ func loop(w *app.Window) error {
 	}
 }
 
-func fill(shaper text.Shaper, fn func(size f32.Point, shaper text.Shaper, gtx layout.Context)) func(gtx layout.Context) layout.Dimensions {
+func fill(shaper *text.Shaper, fn func(size f32.Point, shaper *text.Shaper, gtx layout.Context)) func(gtx layout.Context) layout.Dimensions {
 	return func(gtx layout.Context) layout.Dimensions {
 		const pad = 3
 		return widget.Border{
@@ -120,7 +120,7 @@ func NewDataset(size int) *Dataset {
 
 var defaultMargin = plot.R(20, 20, 20, 20)
 
-func (datasets Datasets) DensityPlot(size f32.Point, shaper text.Shaper, gtx layout.Context) {
+func (datasets Datasets) DensityPlot(size f32.Point, shaper *text.Shaper, gtx layout.Context) {
 	p := plot.New()
 	stack := plot.NewVStack()
 	stack.Margin = defaultMargin
@@ -155,7 +155,7 @@ func (datasets Datasets) DensityPlot(size f32.Point, shaper text.Shaper, gtx lay
 	canvas.Add(gtx)
 }
 
-func (datasets Datasets) ViolinPlot(size f32.Point, shaper text.Shaper, gtx layout.Context) {
+func (datasets Datasets) ViolinPlot(size f32.Point, shaper *text.Shaper, gtx layout.Context) {
 	p := plot.New()
 	stack := plot.NewHStack()
 	stack.Margin = defaultMargin
@@ -193,7 +193,7 @@ func (datasets Datasets) ViolinPlot(size f32.Point, shaper text.Shaper, gtx layo
 	canvas.Add(gtx)
 }
 
-func (datasets Datasets) PercentilesPlot(size f32.Point, shaper text.Shaper, gtx layout.Context) {
+func (datasets Datasets) PercentilesPlot(size f32.Point, shaper *text.Shaper, gtx layout.Context) {
 	p := plot.New()
 	p.X = plot.NewPercentilesAxis()
 
@@ -228,7 +228,7 @@ func (datasets Datasets) PercentilesPlot(size f32.Point, shaper text.Shaper, gtx
 	canvas.Add(gtx)
 }
 
-func (datasets Datasets) LinePlot(size f32.Point, shaper text.Shaper, gtx layout.Context) {
+func (datasets Datasets) LinePlot(size f32.Point, shaper *text.Shaper, gtx layout.Context) {
 	p := plot.New()
 	stack := plot.NewHStack()
 	stack.Margin = defaultMargin
@@ -264,7 +264,7 @@ func (datasets Datasets) LinePlot(size f32.Point, shaper text.Shaper, gtx layout
 	canvas.Add(gtx)
 }
 
-func (datasets Datasets) BarPlot(size f32.Point, shaper text.Shaper, gtx layout.Context) {
+func (datasets Datasets) BarPlot(size f32.Point, shaper *text.Shaper, gtx layout.Context) {
 	p := plot.New()
 	stack := plot.NewHStack()
 	stack.Margin = defaultMargin

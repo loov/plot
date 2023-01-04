@@ -20,13 +20,13 @@ var _ plot.Canvas = (*Canvas)(nil)
 
 // Canvas describes the top-level ptx drawing context.
 type Canvas struct {
-	Shaper text.Shaper
+	Shaper *text.Shaper
 
 	context
 }
 
 // New creates a new SVG canvas.
-func New(shaper text.Shaper, size f32.Point) *Canvas {
+func New(shaper *text.Shaper, size f32.Point) *Canvas {
 	ptx := &Canvas{Shaper: shaper}
 	ptx.bounds.Max.X = plot.Length(size.X)
 	ptx.bounds.Max.Y = plot.Length(size.Y)
